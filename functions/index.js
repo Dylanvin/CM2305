@@ -1,8 +1,24 @@
+'use strict';
+//Initialize libraries
+const {dialogflow} = require('actions-on-google');
 const functions = require('firebase-functions');
 
-// // Create and Deploy Your First Cloud Functions
-// // https://firebase.google.com/docs/functions/write-firebase-functions
-//
-// exports.helloWorld = functions.https.onRequest((request, response) => {
-//  response.send("Hello from Firebase!");
-// });
+const {
+  SimpleResponse,
+  BasicCard,
+  Image,
+  Suggestions,
+  Button
+} = require('actions-on-google');
+// Instantiate a datastore client
+
+const app = dialogflow({debug: true});
+//app.middleware((conv) => {
+
+//  });
+
+app.intent('pls_help', (conv) => {
+    conv.close("Have a good day!");
+  });
+
+exports.TutorFunctions = functions.https.onRequest(app);
