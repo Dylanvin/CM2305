@@ -2,6 +2,11 @@
 //Initialize libraries
 const {dialogflow} = require('actions-on-google');
 const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+admin.initializeApp(functions.config().firebase);
+
+var db = admin.firestore();
+
 
 const {
   SimpleResponse,
@@ -23,7 +28,18 @@ app.intent('pls_help', (conv) => {
   });
 
 app.intent('language', (conv, {language}) => {
-    conv.close(`Wow! I didn't know you knew ${language}!`);   //allows user to extract vars from user input. In this case language
+    conv.close(`Wow! I didn't know you knew ${language} !`);   //allows user to extract vars from user input. In this case language
     });
+
+app.intent('db_test', (conv, {test}) => {
+    // Create a reference to the cities collection
+    var testCol = db.collection('test col');
+
+// Create a query against the collection
+    var queryRef = testCol.where('TestQuery', '==', test);
+    conv.close('Your query is in ' + queryRef);
+});
+
+
 
 exports.TutorFunctions = functions.https.onRequest(app);
