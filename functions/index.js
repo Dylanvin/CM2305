@@ -41,9 +41,11 @@ app.intent('db_test', (conv, {test}) => {
 
 // Create a query against the collection
     var queryRef = testCol.where('TestQuery', '==', test);
-    conv.close('Your query is in ' + queryRef);
+    var querySnap = queryRef.get();
+    var result = querySnap.empty;
+    conv.close('Your query is in ' + result);
 });
 
 
 
-exports.TutorFunctions = functions.https.onRequest(app);
+exports.DBtest = functions.https.onRequest(app);
