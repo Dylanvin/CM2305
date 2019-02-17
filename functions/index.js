@@ -18,7 +18,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
   console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
   console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
 
-  function lecture(agent) { // Lecture time
+  function lecture(agent) { // Lecture location
     agent.add("Not sure yet");
   }
 
@@ -27,15 +27,16 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     agent.add(`I don't know who lectures ` + modulueNo);
   }
 
-  function lecture_location(agent) { // lecture location 
+  function lecture_time(agent) { // Lecture time 
     const moduleNo = agent.parameters.Modules;
-    agent.add('This lecture is somewhere');
+    agent.add('This lecture is some time in the future ');
   }
-  
+
   // Run the proper handler based on the matched Dialogflow intent
   let intentMap = new Map();
   intentMap.set('Where_is_lecture', lecture);
   intentMap.set('module_lecturer', module);
+  intentMap.set('When_is_lecture',lecture_time);
 
 
   agent.handleRequest(intentMap);
