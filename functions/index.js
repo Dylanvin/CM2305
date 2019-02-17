@@ -18,7 +18,9 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
   console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
   console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
 
-
+  function lecture(agent) {
+    agent.add("Not sure yet");
+}
 
   function module(agent) {
     const modulueNo = agent.parameters.Modules;
@@ -26,13 +28,14 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
   }
   
 
+
+
   // Run the proper handler based on the matched Dialogflow intent
   let intentMap = new Map();
+  intentMap.set('Where_is_lecture', lecture);
   intentMap.set('module_lecturer', module);
 
-  // if requests for intents other than the default welcome and default fallback
-  // is from the Google Assistant use the `googleAssistantOther` function
-  // otherwise use the `other` function
+
   agent.handleRequest(intentMap);
 // Create a query against the collection
     var queryRef = testCol.where('TestQuery', '==', test);
