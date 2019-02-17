@@ -1,33 +1,37 @@
+
 'use strict';
-//Initialize libraries
-const {dialogflow} = require('actions-on-google');
+
 const functions = require('firebase-functions');
+const { WebhookClient } = require('dialogflow-fulfillment');
+const { Card, Suggestion } = require('dialogflow-fulfillment');
+const { Carousel } = require('actions-on-google');
 
-const {
-  SimpleResponse,
-  BasicCard,
-  Image,
-  Suggestions,
-  Button
-} = require('actions-on-google');
-// Instantiate a datastore client
+process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
 
-const app = dialogflow({debug: true});
-//app.middleware((conv) => {
+// URLs for images used in card rich responses
+const imageUrl = 'https://developers.google.com/actions/images/badges/XPM_BADGING_GoogleAssistant_VER.png';
+const imageUrl2 = 'https://lh3.googleusercontent.com/Nu3a6F80WfixUqf_ec_vgXy_c0-0r4VLJRXjVFF_X_CIilEu8B9fT35qyTEj_PEsKw';
+const linkUrl = 'https://assistant.google.com/';
 
-//  });
+exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
+  const agent = new WebhookClient({ request, response });
+  console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
+  console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
 
-app.intent('pls_help', (conv) => {
-    var inString = JSON.stringify(app.query);
-    conv.close(inString);
-  });
 
-app.intent('language', (conv, {language}) => {
-    conv.close(`Wow! I didn't know you knew ${language}!`);   //allows user to extract vars from user input. In this case language
-  });
 
-app.intent('module_lecturer', (conv, {Modules}) => {
-    conv.close(`I don't know who lectures ${Modules}!`);
-  });
+  function module(agent) {
+    const modulueNo = agent.parameters.Modules;
+    agent.add(`I don't know who lectures ` + modulueNo);
+  }
 
-exports.TutorFunctions = functions.https.onRequest(app);
+
+  // Run the proper handler based on the matched Dialogflow intent
+  let intentMap = new Map();
+  intentMap.set('module_lecturer', module);
+
+  // if requests for intents other than the default welcome and default fallback
+  // is from the Google Assistant use the `googleAssistantOther` function
+  // otherwise use the `other` function
+  agent.handleRequest(intentMap);
+});
