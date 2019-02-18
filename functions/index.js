@@ -29,9 +29,15 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
 
   function lecture_time(agent) { // Lecture time 
     const moduleNo = agent.parameters.Modules;
+    //Find next lecture in timetable using moduleNo and current time
+    //Get the time of the next lecture and assign as a constant
+    //output:
+    //agent.add('The lecture will begin at ' + value );
     agent.add('This lecture is some time in the future ');
   }
+  function test(agent) {
 
+  }
   // Run the proper handler based on the matched Dialogflow intent
   let intentMap = new Map();
   intentMap.set('Where_is_lecture', lecture);
