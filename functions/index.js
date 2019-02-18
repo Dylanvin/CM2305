@@ -52,12 +52,39 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
 
 
   function lecture_time(agent) { // Lecture time
-    const moduleNo = agent.parameters.Modules;
     //Find next lecture in timetable using moduleNo and current time
     //Get the time of the next lecture and assign as a constant
     //output:
     //agent.add('The lecture will begin at ' + value );
-    agent.add('This lecture is some time in the future ');
+    //Try and find the next lecture
+    const currentDay;
+    switch (new Date().getDay()) {
+      case 0:
+        currentDay = "Sunday";
+        break;
+      case 1 :
+        currentDay = "Monday";
+        break;
+      case 2 :
+        currentDay = "Tuesday";
+        break;
+      case 3 :
+        currentDay = "Wednesday";
+        break;
+      case 4 :
+        currentDay = "Thursday";
+        break;
+      case 5 :
+        currentDay = "Friday";
+        break;
+      case 6 :
+        currentDay = "Saturday";
+        break;
+    }
+    const currentTime = new Date().getHours();
+
+    // Check what the next lecture is.
+    agent.add('This lecture is some time in the future. The current day is : ' + currentDay + ' and the current hour is: ' + currentTime );
   }
   function test(agent) {
 
