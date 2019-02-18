@@ -57,7 +57,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     //output:
     //agent.add('The lecture will begin at ' + value );
     //Try and find the next lecture
-    const currentDay;
+    var currentDay = "";
     switch (new Date().getDay()) {
       case 0:
         currentDay = "Sunday";
