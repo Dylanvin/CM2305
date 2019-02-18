@@ -49,14 +49,9 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
                 agent.add('Please add a entry to the database first by saying, "Write <your phrase> to the database"');
             });
     }
-
-
   function lecture_time(agent) { // Lecture time
     //Find next lecture in timetable using moduleNo and current time
     //Get the time of the next lecture and assign as a constant
-    //output:
-    //agent.add('The lecture will begin at ' + value );
-    //Try and find the next lecture
     var currentDay = "";
     switch (new Date().getDay()) {
       case 0:
@@ -82,12 +77,24 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         break;
     }
     const currentTime = new Date().getHours();
+    // Check DB for next lecture
+    /*                                                            REQUIRES BACK-END IMPLEMENTATION
+    const accessMe = db.collection('Timetable').doc(currentDay);
+    var nextLecture = accessMe.get().then(function(currentDay) {
+        if (currentDay.exists) {
+          // Retrieve data; module;time;location
+          agent.add('Your next lecture is at $TIME in $LOCATION  for the module $MODULE ');
+        } else {
+          // Doc not found
+          agent.add('No lecture found. Please report this to university administrators');
+        }
+    }).catch(() =>{
+      agent.add('An error occured. Please report this to the university administrators');
+    });
 
+    */
     // Check what the next lecture is.
-    agent.add('This lecture is some time in the future. The current day is : ' + currentDay + ' and the current hour is: ' + currentTime );
-  }
-  function test(agent) {
-
+   //agent.add('This lecture is some time in the future. The current day is : ' + currentDay + ' and the current hour is: ' + currentTime );
   }
   // Run the proper handler based on the matched Dialogflow intent
   let intentMap = new Map();
