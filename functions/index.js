@@ -13,7 +13,7 @@ const db = admin.firestore();
 
 // URLs for images used in card rich responses
 const imageUrl = 'https://developers.google.com/actions/images/badges/XPM_BADGING_GoogleAssistant_VER.png';
-const imageUrl2 = 'https://lh3.googleusercontent.com/Nu3a6F80WfixUqf_ec_vgXy_c0-0r4VLJRXjVFF_X_CIilEu8B9fT35qyTEj_PEsKw';
+const imageUrl2 = 'https://lh3.googleusercontent.com/Nu3a6F80WfixUqf_ec_vgXy_c0-0r4VLJRXjVFF_X_CIilEu8B9fT (2.74 m)35qyTEj_PEsKw';
 const linkUrl = 'https://assistant.google.com/';
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
@@ -22,7 +22,8 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
   console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
 
   function lecture(agent) { // Lecture location
-    agent.add("Not sure yet");
+    agent.add("Not sure yet.");
+    agent.add("test");
   }
 
   function module(agent) { // Who lectures this module
