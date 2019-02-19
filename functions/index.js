@@ -19,15 +19,15 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
   const agent = new WebhookClient({ request, response });
   console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
   console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
+  //
+  // function lecture(agent) { // Lecture location
+  //   agent.add("Not sure yet.");
+  //   agent.add("test");
+  // }
 
-  function lecture(agent) { // Lecture location
-    agent.add("Not sure yet.");
-    agent.add("test");
-  }
-
-  function module(agent) { // Who lectures this module
-    const modulueNo = agent.parameters.Modules;
-    agent.add(`I don't know who lectures ` + modulueNo);
+  function moduleL(agent) { // Who lectures this module
+    const moduleNo = agent.parameters.Modules;
+    agent.add(`I don't know who lectures ` + moduleNo);
   }
 
   function readFromDb (agent) {
@@ -48,34 +48,34 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
                 agent.add('Please add a entry to the database first by saying, "Write <your phrase> to the database"');
             });
     }
-  function lecture_time(agent) { // Lecture time
-    //Find next lecture in timetable using moduleNo and current time
-    //Get the time of the next lecture and assign as a constant
-    var currentDay = "";
-    switch (new Date().getDay()) {
-      case 0:
-        currentDay = "Sunday";
-        break;
-      case 1 :
-        currentDay = "Monday";
-        break;
-      case 2 :
-        currentDay = "Tuesday";
-        break;
-      case 3 :
-        currentDay = "Wednesday";
-        break;
-      case 4 :
-        currentDay = "Thursday";
-        break;
-      case 5 :
-        currentDay = "Friday";
-        break;
-      case 6 :
-        currentDay = "Saturday";
-        break;
-    }
-    const currentTime = new Date().getHours();
+  // function lecture_time(agent) { // Lecture time
+  //   //Find next lecture in timetable using moduleNo and current time
+  //   //Get the time of the next lecture and assign as a constant
+  //   var currentDay = "";
+  //   switch (new Date().getDay()) {
+  //     case 0:
+  //       currentDay = "Sunday";
+  //       break;
+  //     case 1 :
+  //       currentDay = "Monday";
+  //       break;
+  //     case 2 :
+  //       currentDay = "Tuesday";
+  //       break;
+  //     case 3 :
+  //       currentDay = "Wednesday";
+  //       break;
+  //     case 4 :
+  //       currentDay = "Thursday";
+  //       break;
+  //     case 5 :
+  //       currentDay = "Friday";
+  //       break;
+  //     case 6 :
+  //       currentDay = "Saturday";
+  //       break;
+  //   }
+  //   const currentTime = new Date().getHours();
     // Check DB for next lecture
     /*                                                            REQUIRES BACK-END IMPLEMENTATION
     const accessMe = db.collection('Timetable').doc(currentDay);
@@ -94,14 +94,12 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     */
     // Check what the next lecture is.
    //agent.add('This lecture is some time in the future. The current day is : ' + currentDay + ' and the current hour is: ' + currentTime );
-  }
+
   // Run the proper handler based on the matched Dialogflow intent
   let intentMap = new Map();
-  intentMap.set('Where_is_lecture', lecture);
-  intentMap.set('module_lecturer', module);
+  //intentMap.set('Where_is_lecture', lecture);
+  intentMap.set('Module_lecturer', moduleL);        //CASE SENSITIVE: THIS HAS CASUED PAIN ALREADY
   intentMap.set('db_test', readFromDb);
-  intentMap.set('When_is_lecture',lecture_time);
-
-
+//  intentMap.set('When_is_lecture',lecture_time);
   agent.handleRequest(intentMap);
-});
+  });
