@@ -48,13 +48,53 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
                 agent.add('Please add a entry to the database first by saying, "Write <your phrase> to the database"');
             });
     }
-
-
   function lecture_time(agent) { // Lecture time
-    const moduleNo = agent.parameters.Modules;
-    agent.add('This lecture is some time in the future ');
-  }
+    //Find next lecture in timetable using moduleNo and current time
+    //Get the time of the next lecture and assign as a constant
+    var currentDay = "";
+    switch (new Date().getDay()) {
+      case 0:
+        currentDay = "Sunday";
+        break;
+      case 1 :
+        currentDay = "Monday";
+        break;
+      case 2 :
+        currentDay = "Tuesday";
+        break;
+      case 3 :
+        currentDay = "Wednesday";
+        break;
+      case 4 :
+        currentDay = "Thursday";
+        break;
+      case 5 :
+        currentDay = "Friday";
+        break;
+      case 6 :
+        currentDay = "Saturday";
+        break;
+    }
+    const currentTime = new Date().getHours();
+    // Check DB for next lecture
+    /*                                                            REQUIRES BACK-END IMPLEMENTATION
+    const accessMe = db.collection('Timetable').doc(currentDay);
+    var nextLecture = accessMe.get().then(function(currentDay) {
+        if (currentDay.exists) {
+          // Retrieve data; module;time;location
+          agent.add('Your next lecture is at $TIME in $LOCATION  for the module $MODULE ');
+        } else {
+          // Doc not found
+          agent.add('No lecture found. Please report this to university administrators');
+        }
+    }).catch(() =>{
+      agent.add('An error occured. Please report this to the university administrators');
+    });
 
+    */
+    // Check what the next lecture is.
+   //agent.add('This lecture is some time in the future. The current day is : ' + currentDay + ' and the current hour is: ' + currentTime );
+  }
   // Run the proper handler based on the matched Dialogflow intent
   let intentMap = new Map();
   intentMap.set('Where_is_lecture', lecture);
