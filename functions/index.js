@@ -9,11 +9,8 @@ const admin = require('firebase-admin');
 process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
 admin.initializeApp(functions.config().firebase);
 const db = admin.firestore();
+const mTeacher = db.collection('Modules').doc('CM1101');
 
-// URLs for images used in card rich responses
-const imageUrl = 'https://developers.google.com/actions/images/badges/XPM_BADGING_GoogleAssistant_VER.png';
-const imageUrl2 = 'https://lh3.googleusercontent.com/Nu3a6F80WfixUqf_ec_vgXy_c0-0r4VLJRXjVFF_X_CIilEu8B9fT (2.74 m)35qyTEj_PEsKw';
-const linkUrl = 'https://assistant.google.com/';
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
   const agent = new WebhookClient({ request, response });
@@ -27,7 +24,13 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
 
   function moduleL(agent) { // Who lectures this module
     const moduleNo = agent.parameters.Modules;
-    agent.add(`I don't know who lectures ` + moduleNo);
+
+    mTeacher.onSnapshot(doc => {
+      const data = doc.data();
+      agent.add(data.Teacher)
+    }
+
+    )
   }
 
   function readFromDb (agent) {
