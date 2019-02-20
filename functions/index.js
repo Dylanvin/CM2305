@@ -25,13 +25,12 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
   function moduleL(agent) { // Who lectures this module
     const moduleNo = agent.parameters.Modules;
 
-    mTeacher.onSnapshot(doc => {
-      const data = doc.data();
-      agent.add(data.Teacher)
-    }
+    return db.collection('Modules').doc(moduleNo).get().then( (snapshot) => {
+           agent.add(snapshot.data().Teacher);
+         return;
+    });
+}
 
-    )
-  }
 
   function readFromDb (agent) {
        // Get the database collection 'test col' and document 'test doc'
@@ -119,8 +118,8 @@ function getStudent(agent) {
                      }
          });
            exists = true;
-         }  
-         
+         }
+
        });
     if (exists) {
       return;
@@ -135,10 +134,10 @@ function getStudent(agent) {
                      'parameters': {}
        });
     }
-    return;    
+    return;
 });
 }
- 
+
 function checkToken(agent){
  var studentDocID;
  var token = agent.parameters.token;
@@ -184,15 +183,15 @@ function checkToken(agent){
           return;
      }).catch(function(err) {
         console.log(err);
-      });  
+      });
 }
-      
+
 function generateToken(length){
  var token = "";
  var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
  for (var i = 0; i < length; i++)
    token += chars.charAt(Math.floor(Math.random() * chars.length));
- 
+
  return token;
 }
 function getName(agent){
@@ -219,7 +218,7 @@ function getName(agent){
      });
 }
 
-function Welcome(agent){ 
+function Welcome(agent){
      return getStudent(agent).then((e) => {
       if (agent.context.get("sessionvars")) {
         if (agent.context.get("sessionvars").hasOwnProperty('parameters')) {
@@ -236,7 +235,7 @@ function Welcome(agent){
 function verify(agent){
   if (!(agent.context.get("sessionvars"))) {
      return getStudent(agent).then((e) => {
-      if (agent.context.get("sessionvars") && (agent.context.get("sessionvars").hasOwnProperty('parameters')) && (agent.context.get("sessionvars").parameters.hasOwnProperty('nickname'))) { 	
+      if (agent.context.get("sessionvars") && (agent.context.get("sessionvars").hasOwnProperty('parameters')) && (agent.context.get("sessionvars").parameters.hasOwnProperty('nickname'))) {
           getName(agent);
       }
       return;
@@ -249,7 +248,7 @@ function getLecturerLoc(agent) {
    var lecturer;
    var c_lecturer;
    var found = false;
-   
+
    if (agent.parameters.lecturer){
        lecturer = agent.parameters.lecturer.toLowerCase();
    }
@@ -260,7 +259,7 @@ function getLecturerLoc(agent) {
        agent.add("Sorry I can't help.");
        return;
    }
-   
+
    return db.collection('Staff').get().then( (snapshot) => {
        snapshot.docs.forEach(doc => {
            if (doc.data().Name.toLowerCase() === lecturer || doc.data().Name.toLowerCase() === c_lecturer ) {
@@ -269,7 +268,7 @@ function getLecturerLoc(agent) {
                found = true;
            }
        });
-       
+
        if (!found){
        agent.add("Sorry I don't know who you're talking about.");
      }
@@ -278,8 +277,8 @@ function getLecturerLoc(agent) {
 }
 // return db.collection('Students').doc(SID.toString()).get().then( (dc) => {
      //modules = dc.get("Modules");
-   //}).then( a => 
- 
+   //}).then( a =>
+
 function getNextLecture(agent) {
    var smodules;
    var namedModule = false;
@@ -292,12 +291,12 @@ function getNextLecture(agent) {
 
    var min = -1;
    var minID;
-  
+
    return db.collection('Students').doc(SID.toString()).get().then( (dc) => {
      smodules = dc.get("Modules");
      return;
-   }).then( a => 
- 
+   }).then( a =>
+
    db.collection('Timetable').get().then( (snapshot) => {
    snapshot.docs.forEach(doc => {
        var time = doc.data().Time;
@@ -318,9 +317,9 @@ function getNextLecture(agent) {
            }
        }
    });
-   
+
    var response = "Sorry, I can't find the lecture you're looking for.";
-   
+
    snapshot.docs.forEach(doc => {
        if (doc.id === minID) {
            var date = doc.data().Time.toDate();
@@ -329,7 +328,7 @@ function getNextLecture(agent) {
            var sameDay = false;
            var sameWeek = false;
            var sameYear = false;
-           
+
            if (date.getFullYear() === today.getFullYear()) {
                sameYear = true;
            }
@@ -368,7 +367,7 @@ function getNextLecture(agent) {
                  'parameters':{
                  'name': doc.data().Lecturer
                    }
-              });         
+              });
        }
    });
    agent.add(response);
@@ -380,7 +379,7 @@ function getNextLecture(agent) {
 function bookMeetingInfo(agent){
    var recipient, date, time;
    if (agent.context.get("bookmeeting")) {
-       if (agent.parameters.recipient) { 
+       if (agent.parameters.recipient) {
            let oldvar = agent.parameters._recipient;
            if ((agent.parameters.recipient !== oldvar && agent.parameters.modifier && agent.parameters.recipientsyn) || oldvar === "") {
                recipient = agent.parameters.recipient;
@@ -389,7 +388,7 @@ function bookMeetingInfo(agent){
                recipient = oldvar;
            }
        }
-       if (agent.parameters.date) { 
+       if (agent.parameters.date) {
            let oldvar = agent.parameters._date;
            if ((agent.parameters.date !== oldvar && agent.parameters.modifier && agent.parameters.datesyn) || oldvar === "") {
                date = agent.parameters.date;
@@ -398,7 +397,7 @@ function bookMeetingInfo(agent){
                date = oldvar;
            }
        }
-       if (agent.parameters.time) { 
+       if (agent.parameters.time) {
            let oldvar = agent.parameters._time;
            if ((agent.parameters.time !== oldvar && agent.parameters.modifier && agent.parameters.timesyn) || oldvar === "") {
                time = agent.parameters.time;
@@ -407,7 +406,7 @@ function bookMeetingInfo(agent){
                time = oldvar;
            }
        }
-   }  
+   }
    else { //if no context exists yet (only triggered during bookmeeting-init intent)
        if (!agent.parameters.Appointment) {
            agent.add("Sorry I don't understand.");
@@ -425,14 +424,14 @@ function bookMeetingInfo(agent){
    }
       var found = false;
       return db.collection('Staff').get().then( (snapshot) => {
-      if (recipient){ 
+      if (recipient){
           snapshot.docs.forEach(doc => {
            if (doc.data().Name.toLowerCase() === recipient.toLowerCase()) {
                found = true;
            }
        });
        }
-       
+
    if (recipient && !found){
        agent.add("Recipient does not exist! Please enter a valid name.");
        recipient = "";
@@ -441,12 +440,12 @@ function bookMeetingInfo(agent){
                  'name':'bookmeeting',
                  'lifespan': 10,
                  'parameters':{
-                 'recipient': recipient, 
-                 'date': date, 
+                 'recipient': recipient,
+                 'date': date,
                  'time': time
                }
        });
-   
+
    }
    else if (recipient && date && time) {
    agent.add("Just to confirm. You want to book an appointment with " + recipient + " on "  + date.split('T')[0] + " at " + time.split('T')[1].split('+')[0] + "?");
@@ -454,8 +453,8 @@ function bookMeetingInfo(agent){
                  'name':'bookmeetingConfirm',
                  'lifespan': 1,
                  'parameters':{
-                 'recipient': recipient, 
-                 'date': date, 
+                 'recipient': recipient,
+                 'date': date,
                  'time': time
                }
                });
@@ -467,8 +466,8 @@ function bookMeetingInfo(agent){
                  'name':'bookmeeting',
                  'lifespan': 10,
                  'parameters':{
-                 'recipient': recipient, 
-                 'date': date, 
+                 'recipient': recipient,
+                 'date': date,
                  'time': time
                }
                });
@@ -480,8 +479,8 @@ function bookMeetingInfo(agent){
                  'name':'bookmeeting',
                  'lifespan': 10,
                  'parameters':{
-                     'recipient': recipient, 
-                     'date': date, 
+                     'recipient': recipient,
+                     'date': date,
                      'time': time
                     }
                });
@@ -493,14 +492,14 @@ function bookMeetingInfo(agent){
                  'name':'bookmeeting',
                  'lifespan': 10,
                  'parameters':{
-                    'recipient': recipient, 
-                   'date': date, 
+                    'recipient': recipient,
+                   'date': date,
                    'time': time
                     }
                    });
      }
      return;
-  }); 
+  });
 }
 
 
@@ -518,7 +517,7 @@ function bookMeeting(agent){
          if (found) {
            return;
          }
-         if (recipient.toLowerCase() === doc.data().Name.toLowerCase()){ 
+         if (recipient.toLowerCase() === doc.data().Name.toLowerCase()){
            docId = doc.id;
            found = true;
          }
@@ -597,7 +596,7 @@ function cancelBooking(agent){
    });
 }
 }
- 
+
 function searchLibrary(agent){
    if (agent.parameters.bookname){
        var bookname = agent.parameters.bookname;
@@ -613,7 +612,7 @@ function searchLibrary(agent){
                    agent.add(doc.data().Title + " is not available.");
                }
            }
-          }); 
+          });
           if (!found){
               agent.add("Book could not be found.");
           }
@@ -627,7 +626,7 @@ function searchEvents(agent){
     var numToID = {};
     agent.add("Upcoming events: \n");
     var count = 1;
-    return db.collection('Events').get().then( (snapshot) => { 
+    return db.collection('Events').get().then( (snapshot) => {
         snapshot.docs.forEach(doc => {
             agent.add(count + ". " + doc.data().Title + '\n');
             numToID[count.toString()] = doc.data().ID;
@@ -640,7 +639,7 @@ function searchEvents(agent){
         });
         return;
     });
-    
+
 }
 
 function eventDetails(agent){
@@ -648,7 +647,7 @@ function eventDetails(agent){
    var ID = false;
    var IDmap = {};
    var found = false;
-   
+
    if (agent.parameters.eventListNumber) {
        event = agent.parameters.eventListNumber;
        ID = true;
@@ -660,16 +659,16 @@ function eventDetails(agent){
    else {
        agent.add("Sorry I don't know about that event.");
    }
-   
-   return db.collection('Events').get().then( (snapshot) => { 
+
+   return db.collection('Events').get().then( (snapshot) => {
         snapshot.docs.forEach(doc => {
             if (ID && doc.data().ID === IDmap[event.toString()] || !ID && doc.data().Title.toLowerCase().indexOf(event) !== -1) {
                 agent.add(doc.data().Title);
                 agent.add(doc.data().Description);
                 agent.add(new Date(doc.data().Date).toLocaleDateString('en', { year: 'numeric', month: 'numeric', day: 'numeric' }));
                 found = true;
-            } 
-        }); 
+            }
+        });
         if (!found) {
             agent.add("Sorry I don't know anything about that event.");
         }
@@ -704,8 +703,8 @@ function changeNickname(agent){
      agent.add("Sorry I can't do that right now.");
      console.log(err);
    });
-   
-   
+
+
 }
 
 function convertParametersDate(date, time){
@@ -738,7 +737,7 @@ function clearContext(agent, contextname) {
  });
  agent.context.delete(contextname);
 }
- 
+
 function clearAll(agent) {
  clearContext(agent, "sessionvars");
  clearContext(agent, "auth");
