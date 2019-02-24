@@ -103,12 +103,12 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
 //-------------------------------------------------------------------------------------------
 
 
-function getStudent(agent) {
-  var fbid = JSON.stringify(request.body.originalDetectIntentRequest.payload.data.sender.id);
+function getStudent(agent) { //get student ID and save it into a context (sessionvars)
+  var fbid = JSON.stringify(request.body.originalDetectIntentRequest.payload.data.sender.id); //get messenger FBID
   fbid = fbid.replace(/['"]+/g, '');
   var exists = false;
-  return db.collection('Authenticated').get().then( (snapshot) => {
-       snapshot.docs.forEach(doc => {
+  return db.collection('Authenticated').get().then( (snapshot) => { //check each doc in Authenticated
+       snapshot.docs.forEach(doc => { //if the user's FBID exists in a doc, get the corresponding SID
          if (doc.data().FBID === fbid) {
            agent.context.set({
                      'name':'sessionvars',
@@ -117,18 +117,18 @@ function getStudent(agent) {
                       'sid': doc.data().SID
                      }
          });
-           exists = true;
+           exists = true; 
          }
 
        });
-    if (exists) {
+    if (exists) { //if the SID has been found, return.
       return;
      }
-    else {
+    else { //initialising authentication with student
        agent.context.delete("sessionvars");
        agent.add("Looks like this is your first time using the bot.");
         agent.add("What is your student number?");
-        agent.context.set({
+        agent.context.set({ //set auth context ready for next intent.
                      'name':'auth',
                      'lifespan': 3,
                      'parameters': {}
@@ -138,24 +138,24 @@ function getStudent(agent) {
 });
 }
 
-function checkToken(agent){
+function checkToken(agent){ //checks token given by user in token intent
  var studentDocID;
- var token = agent.parameters.token;
- var SID = agent.context.get("sid").parameters.sid;
- var fbid = JSON.stringify(request.body.originalDetectIntentRequest.payload.data.sender.id);
+ var token = agent.parameters.token; //get token value from most recent context (token)
+ var SID = agent.context.get("sid").parameters.sid; //get student ID from SID context
+ var fbid = JSON.stringify(request.body.originalDetectIntentRequest.payload.data.sender.id); //get FBID from messenger
  fbid = fbid.replace(/['"]+/g, '');
  var valid = false;
-  return db.collection('Students').get().then( (snapshot) => {
+  return db.collection('Students').get().then( (snapshot) => { //check each student document
        snapshot.docs.forEach(doc => {
-         if ((doc.data().SID === SID) && doc.data().Token === token){
+         if ((doc.data().SID === SID) && doc.data().Token === token){ //if the SID and token match, correct student has been found
            valid = true;
            studentDocID = doc.id;
          }
        });
        return;
   }).then(t => {
-           db.runTransaction(t => {
-                 db.collection("Authenticated").doc(SID.toString()).set({
+           db.runTransaction(t => { //run firebase transaction:
+                 db.collection("Authenticated").doc(SID.toString()).set({ //create a new document in Authenticated using verified values
                        SID: SID,
                        FBID: fbid,
                    });
@@ -163,21 +163,21 @@ function checkToken(agent){
                return;
     }).then(t => {
          db.runTransaction(t => {
-                 db.collection("Students").doc(studentDocID.toString()).update({
+                 db.collection("Students").doc(studentDocID.toString()).update({ //generate a new random token for the student
                        Token: generateToken(8),
                    });
                });
                return;
      }).then(t => {
-          agent.context.set({
+          agent.context.set({ //set sessionvars context storing the SID
             'name':'sessionvars',
             'lifespan': 50,
             'parameters': {
               'sid': SID
             }
             });
-        agent.context.delete("auth");
-        agent.context.delete("token");
+        agent.context.delete("auth"); //reset contexts
+        agent.context.delete("token"); 
         agent.context.delete("sid");
           agent.add("Uni account linked successfully.");
           return;
@@ -186,7 +186,7 @@ function checkToken(agent){
       });
 }
 
-function generateToken(length){
+function generateToken(length){ //generates a random string
  var token = "";
  var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
  for (var i = 0; i < length; i++)
@@ -194,17 +194,18 @@ function generateToken(length){
 
  return token;
 }
-function getName(agent){
+
+function getName(agent){ //gets the nickname of the student and stores into sessionvars context
      var nickname;
     var SID = agent.context.get("sessionvars").parameters.sid;
-     return db.collection('Students').get().then( (snapshot) => {
+     return db.collection('Students').get().then( (snapshot) => { //iterating through student docs
        return snapshot.docs.forEach(doc => {
-         if (doc.data().SID === SID) {
+         if (doc.data().SID === SID) { //finds matching SID -- this should probably be directly referenced rather than involve looping
              nickname = doc.data().Nickname;
          }
        });
      }).then(e => {
-         agent.context.set({
+         agent.context.set({ //updating context with nickname value
                          'name':'sessionvars',
                          'lifespan': 50,
                          'parameters': {
@@ -218,11 +219,11 @@ function getName(agent){
      });
 }
 
-function Welcome(agent){
-     return getStudent(agent).then((e) => {
-      if (agent.context.get("sessionvars")) {
-        if (agent.context.get("sessionvars").hasOwnProperty('parameters')) {
-          return getName(agent).then((f) => {
+function Welcome(agent){ //Welcome intent ----- this intent is currently CRUCIAL for many other functions as it initialises important contexts
+     return getStudent(agent).then((e) => {  // ---- if code has recently been deployed, the sessionsvars may be wiped from messenger session
+      if (agent.context.get("sessionvars")) { // ---- therefore you'll need to say 'hey'/'hi' to recall this intent/function and get back the context.
+        if (agent.context.get("sessionvars").hasOwnProperty('parameters')) { // //if session vars has been initialised properly (exists and has parameters), then:
+          return getName(agent).then((f) => { //get student nickname
            agent.add("Welcome " + agent.context.get("sessionvars").parameters.nickname + "! What would you like to know?");
            return;
        });
@@ -232,9 +233,9 @@ function Welcome(agent){
     });
 }
 
-function verify(agent){
-  if (!(agent.context.get("sessionvars"))) {
-     return getStudent(agent).then((e) => {
+function verify(agent){ //current unused, was going to be used to force reverification in case of accidentally losing session contexts
+  if (!(agent.context.get("sessionvars"))) { //similar to welcome function in structure
+     return getStudent(agent).then((e) => { //gets student id -> gets student nickname using promise chains.
       if (agent.context.get("sessionvars") && (agent.context.get("sessionvars").hasOwnProperty('parameters')) && (agent.context.get("sessionvars").parameters.hasOwnProperty('nickname'))) {
           getName(agent);
       }
@@ -249,11 +250,11 @@ function getLecturerLoc(agent) {
    var c_lecturer;
    var found = false;
 
-   if (agent.parameters.lecturer){
-       lecturer = agent.parameters.lecturer.toLowerCase();
+   if (agent.parameters.lecturer){ 
+       lecturer = agent.parameters.lecturer.toLowerCase(); //lecturer name given by user
    }
    if (agent.parameters.c_lecturer){
-       c_lecturer = agent.parameters.c_lecturer.toLowerCase(); //contextual lecturer name - If wrong intent is triggered.
+       c_lecturer = agent.parameters.c_lecturer.toLowerCase(); //contextual lecturer name - If next-lecture-follow intent is triggered.
    }
    if (!agent.parameters.lecturer && !agent.parameters.c_lecturer) {
        agent.add("Sorry I can't help.");
@@ -261,8 +262,8 @@ function getLecturerLoc(agent) {
    }
 
    return db.collection('Staff').get().then( (snapshot) => {
-       snapshot.docs.forEach(doc => {
-           if (doc.data().Name.toLowerCase() === lecturer || doc.data().Name.toLowerCase() === c_lecturer ) {
+       snapshot.docs.forEach(doc => { //iterate through Staff docs until teacher name is matched
+           if (doc.data().Name.toLowerCase() === lecturer || doc.data().Name.toLowerCase() === c_lecturer ) { 
                var response = doc.data().Name + "'s office is located in " + doc.data().Location;
                agent.add(response);
                found = true;
@@ -281,38 +282,38 @@ function getLecturerLoc(agent) {
 
 function getNextLecture(agent) {
    var smodules;
-   var namedModule = false;
+   var namedModule = false; //used to determine whether a module name was given
    var module;
    var SID = agent.context.get("sessionvars").parameters.sid;
-   if (agent.parameters.Module){
+   if (agent.parameters.Module){ //if the user has specified a module, it wil be saved in this paramater (Module)
        module = agent.parameters.Module.toLowerCase();
        namedModule = true;
    }
 
-   var min = -1;
-   var minID;
+   var min = -1; //used to compare lowest timestamp value and current timestamp value
+   var minID; //document ID with the lowest timestamp value (i.e next lecture)
 
    return db.collection('Students').doc(SID.toString()).get().then( (dc) => {
-     smodules = dc.get("Modules");
+     smodules = dc.get("Modules"); //gets the modules the student is enrolled on.
      return;
    }).then( a =>
 
    db.collection('Timetable').get().then( (snapshot) => {
-   snapshot.docs.forEach(doc => {
+   snapshot.docs.forEach(doc => { //iterate through lectures
        var time = doc.data().Time;
        var caseModule = doc.data().Module.toLowerCase();
        var caseTitle = doc.data().Title.toLowerCase();
+    // if (a module name is given but current lecture does not match it) or (the module is not included in the student's enrolled modules)
        if ((namedModule && !((caseModule === module) || (caseTitle === module)) ) || !(smodules.includes(doc.data().Module))) {
            return;
        }
-       if (min === -1) {
-           min = time;
-           minID = doc.id;
+       if (min === -1) { //if it's first lecture that fullfils above criteria
+           min = time; //store the lecture's time as the closest
+           minID = doc.id; //store the lecture doc ID as the closest
        }
        else {
-           if (time < min) {
-               min = time;
-               min = time;
+           if (time < min) { //if current doc has a closer timestamp then
+               min = time; //same as above
                minID = doc.id;
            }
        }
@@ -320,11 +321,11 @@ function getNextLecture(agent) {
 
    var response = "Sorry, I can't find the lecture you're looking for.";
 
-   snapshot.docs.forEach(doc => {
-       if (doc.id === minID) {
-           var date = doc.data().Time.toDate();
-           var today = new Date();
-           var formatted;
+   snapshot.docs.forEach(doc => { //THIS NEEDS FIXING - don't need to iterate through the documents when I already have the DOC ID 
+       if (doc.id === minID) { //use direct referencing instead! todo
+           var date = doc.data().Time.toDate(); //convert document timestamp into JS date object
+           var today = new Date(); //today's date
+           var formatted; //some bools to determine how the date is relative to today's date
            var sameDay = false;
            var sameWeek = false;
            var sameYear = false;
@@ -361,7 +362,7 @@ function getNextLecture(agent) {
                response = "Your next lecture is " + doc.data().Title + formatted +  " in " + doc.data().Room + " with " + doc.data().Lecturer + ".";
            }
            agent.context.delete("nextlecture-followup");
-           agent.context.set({
+           agent.context.set({ //create a new context storing the lecturer's name, used for follow up intent ("where is that lecturers office?")
                  'name':'nextlecture-followup',
                  'lifespan': 2,
                  'parameters':{
@@ -370,17 +371,18 @@ function getNextLecture(agent) {
               });
        }
    });
-   agent.add(response);
+   agent.add(response); //add the formatted response to the agent
    return;
    }
 ));
 }
 
-function bookMeetingInfo(agent){
-   var recipient, date, time;
+function bookMeetingInfo(agent){ //handles slot filling for the booking functionality
+   var recipient, date, time; //this will be constantly recalled until all the required parameters are given by the user (date/time/recipient)
    if (agent.context.get("bookmeeting")) {
        if (agent.parameters.recipient) {
-           let oldvar = agent.parameters._recipient;
+           let oldvar = agent.parameters._recipient; //uses special parameters values '_param' to store previous values
+           //this allows the user to change set parameters half way through the process, such as ("change the date to tomorrow", "set the time to 5pm")
            if ((agent.parameters.recipient !== oldvar && agent.parameters.modifier && agent.parameters.recipientsyn) || oldvar === "") {
                recipient = agent.parameters.recipient;
            }
@@ -426,17 +428,17 @@ function bookMeetingInfo(agent){
       return db.collection('Staff').get().then( (snapshot) => {
       if (recipient){
           snapshot.docs.forEach(doc => {
-           if (doc.data().Name.toLowerCase() === recipient.toLowerCase()) {
+           if (doc.data().Name.toLowerCase() === recipient.toLowerCase()) { //iterates through staff to ensure the recipient actually exists
                found = true;
            }
        });
        }
 
-   if (recipient && !found){
+   if (recipient && !found){ //if the recipient is given but cannot be found in the database:
        agent.add("Recipient does not exist! Please enter a valid name.");
        recipient = "";
        agent.context.delete("bookmeeting");
-       agent.context.set({
+       agent.context.set({ //sets a new context storing params
                  'name':'bookmeeting',
                  'lifespan': 10,
                  'parameters':{
@@ -447,9 +449,9 @@ function bookMeetingInfo(agent){
        });
 
    }
-   else if (recipient && date && time) {
+   else if (recipient && date && time) { //if all three parameters are given (all slots filled)
    agent.add("Just to confirm. You want to book an appointment with " + recipient + " on "  + date.split('T')[0] + " at " + time.split('T')[1].split('+')[0] + "?");
-   agent.context.set({
+   agent.context.set({  //set confirmation context
                  'name':'bookmeetingConfirm',
                  'lifespan': 1,
                  'parameters':{
@@ -459,10 +461,10 @@ function bookMeetingInfo(agent){
                }
                });
    }
-   else if (recipient && date) {
+   else if (recipient && date) { //if only recipient and date is given:
        agent.add("Great. What time?");
        agent.context.delete("bookmeeting");
-       agent.context.set({
+       agent.context.set({ //reset context and wait for params to be filled by the user
                  'name':'bookmeeting',
                  'lifespan': 10,
                  'parameters':{
@@ -472,7 +474,7 @@ function bookMeetingInfo(agent){
                }
                });
    }
-   else if (recipient) {
+   else if (recipient) { //if just the recipient is given.
        agent.add("Great. What date?");
        agent.context.delete("bookmeeting");
        agent.context.set({
@@ -485,7 +487,7 @@ function bookMeetingInfo(agent){
                     }
                });
    }
-   else {
+   else { //if no information is given (i.e "I'd like to book a meeting")
        agent.add("Great. Who with?");
        agent.context.delete("bookmeeting");
        agent.context.set({
@@ -503,22 +505,23 @@ function bookMeetingInfo(agent){
 }
 
 
-function bookMeeting(agent){
+function bookMeeting(agent){ //books the meeting - creates new events in student and staff timetable collections
+   //currently DOES NOT check if time's are available
    var SID = agent.context.get("sessionvars").parameters.sid;
    var docId;
    var response;
    var found = false;
    //var recAvailable = true;
    //var stuAvailable = true;
-   const dateTime = convertParametersDate(agent.parameters.date, agent.parameters.time);  //split('T')[0]
+   const dateTime = convertParametersDate(agent.parameters.date, agent.parameters.time);  //converting the date and time parameters into a JS date
    var recipient = agent.parameters.recipient;
    return db.collection('Staff').get().then( (snapshot) => {
        snapshot.docs.forEach(doc => {
-         if (found) {
+         if (found) { 
            return;
          }
-         if (recipient.toLowerCase() === doc.data().Name.toLowerCase()){
-           docId = doc.id;
+         if (recipient.toLowerCase() === doc.data().Name.toLowerCase()){ //if the member of staff exists then 
+           docId = doc.id; //set the document ID
            found = true;
          }
         });
@@ -547,7 +550,7 @@ function bookMeeting(agent){
  //  }).then(edi => {
      //if (stuAvailable && recAvailable) {
          db.runTransaction(t => {
-                 db.collection("Students").doc(SID.toString()).collection('Timetable').add({
+                 db.collection("Students").doc(SID.toString()).collection('Timetable').add({ //adding the meeting to the student's Timetable collection
                        Date: dateTime,
                        Description: ("Meeting with " + recipient),
                  Location: (recipient + "'s office")
@@ -557,7 +560,7 @@ function bookMeeting(agent){
     }).then(eds => {
     // if (stuAvailable && recAvailable) {
         db.runTransaction(t => {
-                 db.collection("Staff").doc(docId).collection('Timetable').add({
+                 db.collection("Staff").doc(docId).collection('Timetable').add({ //adding the meeting to the staff's Timetable collection
                        Date: dateTime,
                        Description: ("Meeting with " + agent.context.get("sessionvars").parameters.nickname),
                  Location: (recipient + "'s office")
@@ -573,6 +576,8 @@ function bookMeeting(agent){
         //	agent.add("The recipient is already booked on that date/time.");
       // } else {
          agent.add("Meeting succesfully booked.");
+         // ADD CODE HERE THAT CLEARS ALL BOOKING CONTEXTS, use the function to clear the context because using .delete doesn't always work
+         // ADD CODE HERE
          return;
      //  }
     }).catch(err => {
@@ -580,7 +585,7 @@ function bookMeeting(agent){
    });
 }
 
-function cancelBooking(agent){
+function cancelBooking(agent){ //handles cancel booking intent - just clears contexts, should use context clearing function instead for consintency
    var name = "";
    if (agent.context.get("sessionvars")) {
        name = ", " + agent.context.get("sessionvars").parameters.nickname;
@@ -597,7 +602,7 @@ function cancelBooking(agent){
 }
 }
 
-function searchLibrary(agent){
+function searchLibrary(agent){ //searches for a book in the Library collection
    if (agent.parameters.bookname){
        var bookname = agent.parameters.bookname;
        var found = false;
@@ -622,14 +627,14 @@ function searchLibrary(agent){
 
 }
 
-function searchEvents(agent){
+function searchEvents(agent){ //searches for upcoming events
     var numToID = {};
     agent.add("Upcoming events: \n");
     var count = 1;
     return db.collection('Events').get().then( (snapshot) => {
-        snapshot.docs.forEach(doc => {
-            agent.add(count + ". " + doc.data().Title + '\n');
-            numToID[count.toString()] = doc.data().ID;
+        snapshot.docs.forEach(doc => { //loops through all events (would be way too many events in real life application so maybe improve)
+            agent.add(count + ". " + doc.data().Title + '\n'); //lists the events using arbitrary numbers starting at 1.
+            numToID[count.toString()] = doc.data().ID; //link the above number with the event ID, stored in an array [used later]
             count++;
         });
         agent.context.set({
@@ -648,12 +653,12 @@ function eventDetails(agent){
    var IDmap = {};
    var found = false;
 
-   if (agent.parameters.eventListNumber) {
-       event = agent.parameters.eventListNumber;
+   if (agent.parameters.eventListNumber) { //if the user mentioned the event number ("tell me more about event 1")
+       event = agent.parameters.eventListNumber; //get the number
        ID = true;
-       IDmap = agent.context.get('events').parameters;
+       IDmap = agent.context.get('events').parameters; //get the IDmap array from previous intent
    }
-   else if (agent.parameters.eventTitle) {
+   else if (agent.parameters.eventTitle) { //if the user mentioned the event title ("tell me about carol singing")
        event = agent.parameters.eventTitle.toLowerCase();
    }
    else {
@@ -662,6 +667,7 @@ function eventDetails(agent){
 
    return db.collection('Events').get().then( (snapshot) => {
         snapshot.docs.forEach(doc => {
+            // checks if either the ID exists in the ID map or if the title of the event matches
             if (ID && doc.data().ID === IDmap[event.toString()] || !ID && doc.data().Title.toLowerCase().indexOf(event) !== -1) {
                 agent.add(doc.data().Title);
                 agent.add(doc.data().Description);
@@ -676,13 +682,13 @@ function eventDetails(agent){
    });
 }
 
-function changeNickname(agent){
+function changeNickname(agent){ //change the student's nickname
    verify(agent);
    var nickname = agent.parameters.name;
    var SID = agent.context.get("sessionvars").parameters.sid;
    const databaseEntry = agent.parameters.databaseEntry;
    return db.runTransaction(t => {
-     db.collection('Students').doc(SID.toString()).update({
+     db.collection('Students').doc(SID.toString()).update({ //updates the nickname value using the one given by user
                                Nickname: nickname
    });
    agent.context.delete("sessionvars");
@@ -697,39 +703,38 @@ function changeNickname(agent){
    });
      return Promise.resolve('Write complete');
    }).then(doc => {
-     agent.add("Okay. I'll call you " + nickname + " from now on!");
+     agent.add("Okay. I'll call you " + nickname + " from now on!"); //successful
      return;
    }).catch(err => {
-     agent.add("Sorry I can't do that right now.");
+     agent.add("Sorry I can't do that right now."); //not successful, 98% caused by the sessionvars context no longer being active because of reset
      console.log(err);
    });
 
 
 }
 
-function convertParametersDate(date, time){
+function convertParametersDate(date, time){ //conerts date and time into JS date object
    var newDate = new Date(Date.parse(date.split('T')[0] + 'T' + time.split('T')[1]));
    return newDate;
 }
 
-function addHours(dateObj, hoursToAdd){
+function addHours(dateObj, hoursToAdd){ //unused
    return new Date(new Date(dateObj).setHours(dateObj.getHours() + hoursToAdd));
 }
 
-function getLocaleTimeString(dateObj){
+function getLocaleTimeString(dateObj){ //unused
  return dateObj.toLocaleTimeString('en', { hour: 'numeric', hour12: true });
 }
 
-function getLocaleDateString(dateObj){
+function getLocaleDateString(dateObj){ //unused
  return dateObj.toLocaleDateString('en', { weekday: 'long', month: 'long', day: 'numeric' });
 }
 
-
-function zTime(n) {
- return (n < 10 ? '0' : '') + n;
+function zTime(n) { //used to append zeros to low numbers
+ return (n < 10 ? '0' : '') + n; 
 }
 
-function clearContext(agent, contextname) {
+function clearContext(agent, contextname) { //used to clear contexts properly, this should always be used instead of just using .delete
  agent.context.set({
                      'name': contextname,
                      'lifespan': 0,
@@ -738,7 +743,7 @@ function clearContext(agent, contextname) {
  agent.context.delete(contextname);
 }
 
-function clearAll(agent) {
+function clearAll(agent) { //clear all authentication-related contexts
  clearContext(agent, "sessionvars");
  clearContext(agent, "auth");
  clearContext(agent, "token");
