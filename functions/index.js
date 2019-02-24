@@ -26,7 +26,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     const moduleNo = agent.parameters.Modules;
 
     return db.collection('Modules').doc(moduleNo).get().then( (snapshot) => {
-           agent.add(snapshot.data().Teacher);
+           agent.add(snapshot.data().Module_Leader);
          return;
     });
 }
