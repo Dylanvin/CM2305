@@ -26,7 +26,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     const moduleNo = agent.parameters.Modules;
 
     return db.collection('Modules').doc(moduleNo).get().then( (snapshot) => {
-           agent.add(snapshot.data().Module_Leader);
+           agent.add(snapshot.data().Module_Leader + " is the module leader for this module.");
          return;
     });
 }
@@ -117,7 +117,7 @@ function getStudent(agent) { //get student ID and save it into a context (sessio
                       'sid': doc.data().SID
                      }
          });
-           exists = true; 
+           exists = true;
          }
 
        });
@@ -177,7 +177,7 @@ function checkToken(agent){ //checks token given by user in token intent
             }
             });
         agent.context.delete("auth"); //reset contexts
-        agent.context.delete("token"); 
+        agent.context.delete("token");
         agent.context.delete("sid");
           agent.add("Uni account linked successfully.");
           return;
@@ -250,7 +250,7 @@ function getLecturerLoc(agent) {
    var c_lecturer;
    var found = false;
 
-   if (agent.parameters.lecturer){ 
+   if (agent.parameters.lecturer){
        lecturer = agent.parameters.lecturer.toLowerCase(); //lecturer name given by user
    }
    if (agent.parameters.c_lecturer){
@@ -263,7 +263,7 @@ function getLecturerLoc(agent) {
 
    return db.collection('Staff').get().then( (snapshot) => {
        snapshot.docs.forEach(doc => { //iterate through Staff docs until teacher name is matched
-           if (doc.data().Name.toLowerCase() === lecturer || doc.data().Name.toLowerCase() === c_lecturer ) { 
+           if (doc.data().Name.toLowerCase() === lecturer || doc.data().Name.toLowerCase() === c_lecturer ) {
                var response = doc.data().Name + "'s office is located in " + doc.data().Location;
                agent.add(response);
                found = true;
@@ -321,7 +321,7 @@ function getNextLecture(agent) {
 
    var response = "Sorry, I can't find the lecture you're looking for.";
 
-   snapshot.docs.forEach(doc => { //THIS NEEDS FIXING - don't need to iterate through the documents when I already have the DOC ID 
+   snapshot.docs.forEach(doc => { //THIS NEEDS FIXING - don't need to iterate through the documents when I already have the DOC ID
        if (doc.id === minID) { //use direct referencing instead! todo
            var date = doc.data().Time.toDate(); //convert document timestamp into JS date object
            var today = new Date(); //today's date
@@ -517,10 +517,10 @@ function bookMeeting(agent){ //books the meeting - creates new events in student
    var recipient = agent.parameters.recipient;
    return db.collection('Staff').get().then( (snapshot) => {
        snapshot.docs.forEach(doc => {
-         if (found) { 
+         if (found) {
            return;
          }
-         if (recipient.toLowerCase() === doc.data().Name.toLowerCase()){ //if the member of staff exists then 
+         if (recipient.toLowerCase() === doc.data().Name.toLowerCase()){ //if the member of staff exists then
            docId = doc.id; //set the document ID
            found = true;
          }
@@ -731,7 +731,7 @@ function getLocaleDateString(dateObj){ //unused
 }
 
 function zTime(n) { //used to append zeros to low numbers
- return (n < 10 ? '0' : '') + n; 
+ return (n < 10 ? '0' : '') + n;
 }
 
 function clearContext(agent, contextname) { //used to clear contexts properly, this should always be used instead of just using .delete
