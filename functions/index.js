@@ -16,93 +16,15 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
   const agent = new WebhookClient({ request, response });
   console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
   console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
-  //
-  // function lecture(agent) { // Lecture location
-  //   agent.add("Not sure yet.");
-  //   agent.add("test");
-  // }
 
   function moduleL(agent) { // Who lectures this module
     const moduleNo = agent.parameters.Modules;
 
     return db.collection('Modules').doc(moduleNo).get().then( (snapshot) => {
-           agent.add(snapshot.data().Teacher);
-         return;
+      agent.add(snapshot.data().Teacher);
+      return;
     });
-}
-
-
-  function readFromDb (agent) {
-       // Get the database collection 'test col' and document 'test doc'
-       const dialogflowAgentDoc = db.collection('test col').doc('test doc');
-
-       // Get the value of 'TestQuery' in the document and send it to the user
-        return dialogflowAgentDoc.get()
-            .then(doc => {
-                if (!doc.exists) {
-                    agent.add('No data found in the database!');
-                } else {
-                    agent.add(doc.get('TestQuery'));
-                }
-                return Promise.resolve('Read complete');
-            }).catch(() => {
-                agent.add('Error reading entry from the Firestore database.');
-                agent.add('Please add a entry to the database first by saying, "Write <your phrase> to the database"');
-            });
-    }
-
-
-  // function lecture_time(agent) { // Lecture time
-  //   //Find next lecture in timetable using moduleNo and current time
-  //   //Get the time of the next lecture and assign as a constant
-  //   var currentDay = "";
-  //   switch (new Date().getDay()) {
-  //     case 0:
-  //       currentDay = "Sunday";
-  //       break;
-  //     case 1 :
-  //       currentDay = "Monday";
-  //       break;
-  //     case 2 :
-  //       currentDay = "Tuesday";
-  //       break;
-  //     case 3 :
-  //       currentDay = "Wednesday";
-  //       break;
-  //     case 4 :
-  //       currentDay = "Thursday";
-  //       break;
-  //     case 5 :
-  //       currentDay = "Friday";
-  //       break;
-  //     case 6 :
-  //       currentDay = "Saturday";
-  //       break;
-  //   }
-  //   const currentTime = new Date().getHours();
-    // Check DB for next lecture
-    /*                                                            REQUIRES BACK-END IMPLEMENTATION
-    const accessMe = db.collection('Timetable').doc(currentDay);
-    var nextLecture = accessMe.get().then(function(currentDay) {
-        if (currentDay.exists) {
-          // Retrieve data; module;time;location
-          agent.add('Your next lecture is at $TIME in $LOCATION  for the module $MODULE ');
-        } else {
-          // Doc not found
-          agent.add('No lecture found. Please report this to university administrators');
-        }
-    }).catch(() =>{
-      agent.add('An error occured. Please report this to the university administrators');
-    });
-
-    */
-    // Check what the next lecture is.
-   //agent.add('This lecture is some time in the future. The current day is : ' + currentDay + ' and the current hour is: ' + currentTime );
-
-//----------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------
-
-
+  }
 function getStudent(agent) { //get student ID and save it into a context (sessionvars)
   var fbid = JSON.stringify(request.body.originalDetectIntentRequest.payload.data.sender.id); //get messenger FBID
   fbid = fbid.replace(/['"]+/g, '');
@@ -276,10 +198,6 @@ function getLecturerLoc(agent) {
      return;
    });
 }
-// return db.collection('Students').doc(SID.toString()).get().then( (dc) => {
-     //modules = dc.get("Modules");
-   //}).then( a =>
-
 function getNextLecture(agent) {
    var smodules;
    var namedModule = false; //used to determine whether a module name was given
@@ -322,54 +240,62 @@ function getNextLecture(agent) {
    var response = "Sorry, I can't find the lecture you're looking for.";
 
    snapshot.docs.forEach(doc => { //THIS NEEDS FIXING - don't need to iterate through the documents when I already have the DOC ID 
-       if (doc.id === minID) { //use direct referencing instead! todo
-           var date = doc.data().Time.toDate(); //convert document timestamp into JS date object
-           var today = new Date(); //today's date
-           var formatted; //some bools to determine how the date is relative to today's date
-           var sameDay = false;
-           var sameWeek = false;
-           var sameYear = false;
-
-           if (date.getFullYear() === today.getFullYear()) {
-               sameYear = true;
-           }
-           if ((date.getMonth() === today.getMonth()) && sameYear && date.getDate() >= today.getDate() && ((date.getDate() - today.getDate()) <= 7)) {
-               sameWeek = true;
-           }
-           if (sameWeek && (date.getDate() === today.getDate())) {
-               sameDay = true;
-           }
-           if ((date.getMonth() === today.getMonth()) && (date.getFullYear() === today.getFullYear())
-           && date.getDate() >= today.getDate() && ((date.getDate() - today.getDate()) <= 7)) {
-               sameWeek = true;
-           }
-           if (sameDay) {
-               formatted = " today at " + date.getHours() + ":" + date.getMinutes();
-           }
-           else if (sameWeek) {
-               formatted = " this " + date.toLocaleDateString('en', {weekday: 'long'}) + " at " + zTime(date.getHours()) + ":" + zTime(date.getMinutes());
-           }
-           else if (sameYear) {
-               formatted = " on " + date.toLocaleDateString('en', { weekday: 'long', month: 'long', day: 'numeric'}) + " at " + zTime(date.getHours()) + ":" + zTime(date.getMinutes());
-           }
-           else {
-                formatted = " on " + date.toLocaleDateString('en', { weekday: 'long',  year: 'numeric', month: 'long', day: 'numeric'}) + " at " + zTime(date.getHours()) + ":" + zTime(date.getMinutes());
-           }
-           if (namedModule) {
-               response = "Your next " + doc.data().Title + " lecture is" + formatted + " in " + doc.data().Room + " with " + doc.data().Lecturer + ".";
-           }
-           else {
-               response = "Your next lecture is " + doc.data().Title + formatted +  " in " + doc.data().Room + " with " + doc.data().Lecturer + ".";
-           }
-           agent.context.delete("nextlecture-followup");
-           agent.context.set({ //create a new context storing the lecturer's name, used for follow up intent ("where is that lecturers office?")
-                 'name':'nextlecture-followup',
-                 'lifespan': 2,
-                 'parameters':{
-                 'name': doc.data().Lecturer
-                   }
-              });
-       }
+    if (doc.id === minID) { //use direct referencing instead! todo
+      var date = doc.data().Time.toDate(); //convert document timestamp into JS date object
+      var today = new Date(); //today's date
+      var formatted; //some bools to determine how the date is relative to today's date
+      var sameDay = false;
+      var sameWeek = false;
+      var sameYear = false;
+      /*
+      if (doc id already found) {
+        return true; // Breaks the forEach loop without iterating further.
+      }
+      */
+      if (date.getFullYear() === today.getFullYear()) {
+        sameYear = true;
+        //formatted = " on " + date.toLocaleDateString('en', { weekday: 'long', month: 'long', day: 'numeric'}) + " at " + zTime(date.getHours()) + ":" + zTime(date.getMinutes());
+      }
+      if ((date.getMonth() === today.getMonth()) && sameYear && date.getDate() >= today.getDate() && ((date.getDate() - today.getDate()) <= 7)) {
+        sameWeek = true;
+        //formatted = " this " + date.toLocaleDateString('en', {weekday: 'long'}) + " at " + zTime(date.getHours()) + ":" + zTime(date.getMinutes());
+      }
+      if (sameWeek && (date.getDate() === today.getDate())) {
+        sameDay = true;
+        //formatted = " today at " + date.getHours() + ":" + date.getMinutes();
+      }
+      if ((date.getMonth() === today.getMonth()) && (date.getFullYear() === today.getFullYear()) && date.getDate() >= today.getDate() && ((date.getDate() - today.getDate()) <= 7)) {
+        sameWeek = true;
+        //formatted = " this " + date.toLocaleDateString('en', {weekday: 'long'}) + " at " + zTime(date.getHours()) + ":" + zTime(date.getMinutes());
+      }
+      if (sameDay) {
+        formatted = " today at " + date.getHours() + ":" + date.getMinutes();
+      }
+      else if (sameWeek) {
+        formatted = " this " + date.toLocaleDateString('en', {weekday: 'long'}) + " at " + zTime(date.getHours()) + ":" + zTime(date.getMinutes());
+      }
+      else if (sameYear) {
+        formatted = " on " + date.toLocaleDateString('en', { weekday: 'long', month: 'long', day: 'numeric'}) + " at " + zTime(date.getHours()) + ":" + zTime(date.getMinutes());
+      }
+      else {
+        formatted = " on " + date.toLocaleDateString('en', { weekday: 'long',  year: 'numeric', month: 'long', day: 'numeric'}) + " at " + zTime(date.getHours()) + ":" + zTime(date.getMinutes());
+      }
+      if (namedModule) {
+        response = "Your next " + doc.data().Title + " lecture is" + formatted + " in " + doc.data().Room + " with " + doc.data().Lecturer + ".";
+      }
+      
+      else {
+        response = "Your next lecture is " + doc.data().Title + formatted +  " in " + doc.data().Room + " with " + doc.data().Lecturer + ".";
+      }
+      agent.context.delete("nextlecture-followup");
+      agent.context.set({ //create a new context storing the lecturer's name, used for follow up intent ("where is that lecturers office?")
+        'name':'nextlecture-followup',
+        'lifespan': 2,
+        'parameters':{
+          'name': doc.data().Lecturer
+        }
+      });
+    }
    });
    agent.add(response); //add the formatted response to the agent
    return;
@@ -744,8 +670,11 @@ function clearContext(agent, contextname) { //used to clear contexts properly, t
 }
 /*
 function nextExam( agent ) { // Created by Rhys 25.02.19 // Last updated 25.02.19
+
   // Recycled some of Joe's code but stopped further development as the code may be overhauled.
-  // Need to add exam numbers entities
+  // Need to add exam numbers entities.
+  // May take a different approach and base this using the module entity and use the module code to determine the exam.
+
   var examSpecified = false; // Determines whether the next exam is specified or not when parsed to this function.
   var exam;
   var examList;
@@ -797,9 +726,7 @@ function clearAll(agent) { //clear all authentication-related contexts
 
   // Run the proper handler based on the matched Dialogflow intent
   let intentMap = new Map();
-  //intentMap.set('Where_is_lecture', lecture);
   intentMap.set('Module_lecturer', moduleL);        //CASE SENSITIVE: THIS HAS CASUED PAIN ALREADY
-  intentMap.set('db_test', readFromDb);
   intentMap.set('LecturerLocation', getLecturerLoc);
   intentMap.set('NextLecture', getNextLecture);
   intentMap.set('NextLecture-LecturerLocation', getLecturerLoc);
@@ -814,7 +741,6 @@ function clearAll(agent) { //clear all authentication-related contexts
   intentMap.set('Welcome', Welcome);
   intentMap.set('Token', checkToken);
   intentMap.set('clearall', clearAll);
-  intentMap.set('Exams',nextExam);
-//  intentMap.set('When_is_lecture',lecture_time);
+  //intentMap.set('Exams',nextExam);
   agent.handleRequest(intentMap);
   });
