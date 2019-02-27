@@ -76,7 +76,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
   //   }
   //   const currentTime = new Date().getHours();
     // Check DB for next lecture
-    /*                                                            REQUIRES BACK-END IMPLEMENTATION
+                                                          //      REQUIRES BACK-END IMPLEMENTATION
     const accessMe = db.collection('Timetable').doc(currentDay);
     var nextLecture = accessMe.get().then(function(currentDay) {
         if (currentDay.exists) {
@@ -771,7 +771,7 @@ function nextExam( agent ) { // Created by Rhys 25.02.19 // Last updated 25.02.1
     });
   });
 }
-
+*/
 
 function clearAll(agent) { //clear all authentication-related contexts
  clearContext(agent, "sessionvars");
