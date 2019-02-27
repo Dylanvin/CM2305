@@ -16,11 +16,6 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
   const agent = new WebhookClient({ request, response });
   console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
   console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
-  //
-  // function lecture(agent) { // Lecture location
-  //   agent.add("Not sure yet.");
-  //   agent.add("test");
-  // }
 
   function moduleL(agent) { // Who lectures this module
     const moduleNo = agent.parameters.Modules;
@@ -94,15 +89,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     }).catch(() =>{
       agent.add('An error occured. Please report this to the university administrators');
     });
-
-    */
-    // Check what the next lecture is.
-   //agent.add('This lecture is some time in the future. The current day is : ' + currentDay + ' and the current hour is: ' + currentTime );
-
-//----------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------
-
-
+  }
 function getStudent(agent) { //get student ID and save it into a context (sessionvars)
   var fbid = JSON.stringify(request.body.originalDetectIntentRequest.payload.data.sender.id); //get messenger FBID
   fbid = fbid.replace(/['"]+/g, '');
@@ -276,10 +263,6 @@ function getLecturerLoc(agent) {
      return;
    });
 }
-// return db.collection('Students').doc(SID.toString()).get().then( (dc) => {
-     //modules = dc.get("Modules");
-   //}).then( a =>
-
 function getNextLecture(agent) {
    var smodules;
    var namedModule = false; //used to determine whether a module name was given
@@ -742,6 +725,53 @@ function clearContext(agent, contextname) { //used to clear contexts properly, t
  });
  agent.context.delete(contextname);
 }
+/*
+function nextExam( agent ) { // Created by Rhys 25.02.19 // Last updated 25.02.19
+
+  // Recycled some of Joe's code but stopped further development as the code may be overhauled.
+  // Need to add exam numbers entities.
+  // May take a different approach and base this using the module entity and use the module code to determine the exam.
+
+  var examSpecified = false; // Determines whether the next exam is specified or not when parsed to this function.
+  var exam;
+  var examList;
+  var SID = agent.context.get("sessionvars").parameters.sid; // Get student ID from context parameters.
+  var minTime = -1; //used to compare lowest timestamp value and current timestamp value
+  var minDocumentID; //document ID with the lowest timestamp value (i.e next lecture)
+  // Check if the next exam was specified
+  if (agent.parameters.Exam) {
+      // Update parameters with the specified exam, and update examSpecified now that we know what the next exam is.
+       exam = agent.parameters.Exam.toLowerCase();
+       examSpecified = true;
+  }
+  // Search FireBase for the document with the next exam. This is done by getting the student ID and checking the Exams collection within
+  // that student.
+  return db.collection('Students').doc(SID.toString()).get().then( (dc) =>  {
+    examList = dc.get("Exams"); // Get exams the student currently takes
+    return;
+  }).then( a =>
+  db.collection('Exams').get().then( ( snapshot ) => {
+    snapshot.docs.forEach(doc => { // Iterate through each exam document in the Student's list of exams.
+      var examTime = doc.data().Time;
+      var examCode = doc.data().Module.toLowerCase();
+      var examTitle = doc.data().Title.toLowerCase();
+      if ( (examSpecified && !(examCode === exam) || (examTitle == exam)) || (examList.includes(doc.data().Exam)) ) {
+        return; // Return nothing as the specified exam doesnt exist.
+      }
+      if ( minTime === -1) {
+        minTime = examTime;
+        minDocumentID = doc.id;
+      }
+      else {
+        if ( examTime < minTime ) {
+          minTime = examTime;
+          minDocumentID = doc.id;
+        }
+      }
+    });
+  });
+}
+
 
 function clearAll(agent) { //clear all authentication-related contexts
  clearContext(agent, "sessionvars");
@@ -753,9 +783,7 @@ function clearAll(agent) { //clear all authentication-related contexts
 
   // Run the proper handler based on the matched Dialogflow intent
   let intentMap = new Map();
-  //intentMap.set('Where_is_lecture', lecture);
   intentMap.set('Module_lecturer', moduleL);        //CASE SENSITIVE: THIS HAS CASUED PAIN ALREADY
-  intentMap.set('db_test', readFromDb);
   intentMap.set('LecturerLocation', getLecturerLoc);
   intentMap.set('NextLecture', getNextLecture);
   intentMap.set('NextLecture-LecturerLocation', getLecturerLoc);
@@ -770,6 +798,6 @@ function clearAll(agent) { //clear all authentication-related contexts
   intentMap.set('Welcome', Welcome);
   intentMap.set('Token', checkToken);
   intentMap.set('clearall', clearAll);
-//  intentMap.set('When_is_lecture',lecture_time);
+  //intentMap.set('Exams',nextExam);
   agent.handleRequest(intentMap);
   });
