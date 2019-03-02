@@ -16,7 +16,8 @@
     "dialogflow": "^0.8.0",
     "dialogflow-fulfillment": "^0.6.1",
     "googleapis": "^37.2.0",
-    "google-auth-library": "^3.1.0"
+    "google-auth-library": "^3.1.0",
+    "nodemailer": "^3.0.2"
   },
   "devDependencies": {
     "eslint": "^5.14.1",

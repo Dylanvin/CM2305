@@ -10,7 +10,7 @@ process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
 admin.initializeApp(functions.config().firebase);
 const db = admin.firestore();
 const mTeacher = db.collection('Modules').doc('CM1101');
-
+var mailer = require('./mailer.js');
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
   const agent = new WebhookClient({ request, response });
@@ -46,7 +46,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
             });
     }
 
-
+  /*
   // function lecture_time(agent) { // Lecture time
   //   //Find next lecture in timetable using moduleNo and current time
   //   //Get the time of the next lecture and assign as a constant
@@ -772,6 +772,11 @@ function nextExam( agent ) { // Created by Rhys 25.02.19 // Last updated 25.02.1
   });
 }
 */
+function mailerFunc(){
+  mailer.theMailer();
+  agent.add("Email sent!");
+}
+
 
 function clearAll(agent) { //clear all authentication-related contexts
  clearContext(agent, "sessionvars");
@@ -784,6 +789,7 @@ function clearAll(agent) { //clear all authentication-related contexts
   // Run the proper handler based on the matched Dialogflow intent
   let intentMap = new Map();
   intentMap.set('Module_lecturer', moduleL);        //CASE SENSITIVE: THIS HAS CASUED PAIN ALREADY
+  /*
   intentMap.set('LecturerLocation', getLecturerLoc);
   intentMap.set('NextLecture', getNextLecture);
   intentMap.set('NextLecture-LecturerLocation', getLecturerLoc);
@@ -797,7 +803,9 @@ function clearAll(agent) { //clear all authentication-related contexts
   intentMap.set('CallMe', changeNickname);
   intentMap.set('Welcome', Welcome);
   intentMap.set('Token', checkToken);
+  */
   intentMap.set('clearall', clearAll);
+  intentMap.set('mail', mailerFunc);
   //intentMap.set('Exams',nextExam);
   agent.handleRequest(intentMap);
   });
