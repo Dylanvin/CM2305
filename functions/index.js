@@ -11,6 +11,7 @@ admin.initializeApp(functions.config().firebase);
 const db = admin.firestore();
 const mTeacher = db.collection('Modules').doc('CM1101');
 var mailer = require('./mailer.js');
+const lecturerInfo = require('./getLecturerInfo.js');
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
   const agent = new WebhookClient({ request, response });
@@ -45,54 +46,14 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
               });
   }
 
-  function getLecturerEmail(agent) {
-    
+  function getLecturerEmailFunc(lecturerName) {
+    return lecturerInfo.getLecturerEmail(lecturerName.toLowerCase());
   }
-  /*
-  // function lecture_time(agent) { // Lecture time
-  //   //Find next lecture in timetable using moduleNo and current time
-  //   //Get the time of the next lecture and assign as a constant
-  //   var currentDay = "";
-  //   switch (new Date().getDay()) {
-  //     case 0:
-  //       currentDay = "Sunday";
-  //       break;
-  //     case 1 :
-  //       currentDay = "Monday";
-  //       break;
-  //     case 2 :
-  //       currentDay = "Tuesday";
-  //       break;
-  //     case 3 :
-  //       currentDay = "Wednesday";
-  //       break;
-  //     case 4 :
-  //       currentDay = "Thursday";
-  //       break;
-  //     case 5 :
-  //       currentDay = "Friday";
-  //       break;
-  //     case 6 :
-  //       currentDay = "Saturday";
-  //       break;
-  //   }
-  //   const currentTime = new Date().getHours();
-    // Check DB for next lecture
-                                                          //      REQUIRES BACK-END IMPLEMENTATION
-    const accessMe = db.collection('Timetable').doc(currentDay);
-    var nextLecture = accessMe.get().then(function(currentDay) {
-        if (currentDay.exists) {
-          // Retrieve data; module;time;location
-          agent.add('Your next lecture is at $TIME in $LOCATION  for the module $MODULE ');
-        } else {
-          // Doc not found
-          agent.add('No lecture found. Please report this to university administrators');
-        }
-    }).catch(() =>{
-      agent.add('An error occured. Please report this to the university administrators');
-    });
+  function getLecturerLocationFunc(lecturerName) {
+    return lecturerInfo.getLecturerLocation(lecturerName.toLowerCase());
   }
-function getStudent(agent) { //get student ID and save it into a context (sessionvars)
+/*
+ function getStudent(agent) { //get student ID and save it into a context (sessionvars)
   var fbid = JSON.stringify(request.body.originalDetectIntentRequest.payload.data.sender.id); //get messenger FBID
   fbid = fbid.replace(/['"]+/g, '');
   var exists = false;
@@ -776,7 +737,7 @@ function nextExam( agent ) { // Created by Rhys 25.02.19 // Last updated 25.02.1
 */
 function mailerFunc(){
   mailer.Email = "test"
-  mailer.theMailer("vincentd1@gmail.com", "Dylan", "bobf@gmail.com", "bob", "c231242", "monday 25th 10am");
+  mailer.theMailer("Dylan", "bobf@gmail.com", "bob", "c231242", "monday 25th 10am");
   agent.add("Email sent!");
 }
 

@@ -2,7 +2,7 @@ var email;
 module.exports.email; 
 
 module.exports = {
-   theMailer:function(toemail, lecName, stuEmail, stuName, stuNum, DateTime){
+   theMailer:function(lecName, stuEmail, stuName, stuNum, DateTime){
 
     var nodemailer = require('nodemailer');
     var transporter = nodemailer.createTransport({
@@ -16,7 +16,7 @@ module.exports = {
 
     var mailOptions = {
       from: 'mytestbott@gmail.com',           //What will be sent.
-      to: toemail,
+      to: "vincentd1@gmail.com",
       subject: 'Hello lecName, ',                                                            //In order to use moreStuff's methods here,
       html: '<h3>Hello ' + lecName + '</h3><p>' + stuName + '(' + stuNum + ')' + ' whishes to see you at ' + DateTime + '. Their email is: ' + stuEmail + '.</p>'                                 //Use moreStuff followed by any method name in file.
     };
