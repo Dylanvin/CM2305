@@ -24,8 +24,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
            agent.add(snapshot.data().Module_Leader + " is the module leader for this module.");
          return;
     });
-}
-
+  }
 
   function readFromDb (agent) {
        // Get the database collection 'test col' and document 'test doc'
@@ -43,9 +42,12 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
             }).catch(() => {
                 agent.add('Error reading entry from the Firestore database.');
                 agent.add('Please add a entry to the database first by saying, "Write <your phrase> to the database"');
-            });
-    }
+              });
+  }
 
+  function getLecturerEmail(agent) {
+    
+  }
   /*
   // function lecture_time(agent) { // Lecture time
   //   //Find next lecture in timetable using moduleNo and current time
