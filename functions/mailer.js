@@ -1,21 +1,24 @@
+var email;
+module.exports.email; 
+
 module.exports = {
-   theMailer:function(){
+   theMailer:function(toemail, lecName, stuEmail, stuName, stuNum, DateTime){
 
     var nodemailer = require('nodemailer');
     var transporter = nodemailer.createTransport({
 
       service:'gmail',
       auth: {                                //Deffine service and login info of email account.
-        user: '',
-        pass: ''
+        user: 'mytestbott@gmail.com',
+        pass: 'Mypassword1'
       },
     });
 
     var mailOptions = {
-      from: '',           //What will be sent.
-      to: '',
-      subject: 'You got mail! Free money', //In order to use moreStuff's methods here,
-      text: 'That was easy!'                                 //Use moreStuff followed by any method name in file.
+      from: 'mytestbott@gmail.com',           //What will be sent.
+      to: toemail,
+      subject: 'Hello lecName, ',                                                            //In order to use moreStuff's methods here,
+      html: '<h3>Hello ' + lecName + '</h3><p>' + stuName + '(' + stuNum + ')' + ' whishes to see you at ' + DateTime + '. Their email is: ' + stuEmail + '.</p>'                                 //Use moreStuff followed by any method name in file.
     };
 
     transporter.sendMail(mailOptions, function(error, info){
@@ -27,3 +30,5 @@ module.exports = {
     });
   }
 };
+
+
