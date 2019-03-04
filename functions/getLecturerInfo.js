@@ -12,11 +12,12 @@ module.exports = {
 				if( potentialStaffName == specifiedLecturer ) {
 					// If found, return the lecturer's Email.
 					lecturerEmail == doc.data().Email;
-					return lecturerEmail;					
+					return lecturerEmail;
 				}
 			})
 		})
 	}
+
 //																											Get Lecturer's Location
 	getLecturerLocation:function(specifiedLecturer) {
 	// Search each document in the Staff table for the correct staff member. (Again this can be improved)
@@ -32,6 +33,6 @@ module.exports = {
 					return lecturerLoc;
 				}
 			})
-		})		
+		})
 	}
 };

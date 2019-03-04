@@ -737,7 +737,7 @@ function nextExam( agent ) { // Created by Rhys 25.02.19 // Last updated 25.02.1
 */
 function mailerFunc(){
   mailer.Email = "test"
-  mailer.theMailer("Dylan", "bobf@gmail.com", "bob", "c231242", "monday 25th 10am");
+  mailer.theMailer( "Dylan", "vincentd1@cardiff.ac.uk", "bobf@gmail.com", "bob", "c231242", "monday 25th 10am");
   agent.add("Email sent!");
 }
 
