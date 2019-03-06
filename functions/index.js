@@ -11,7 +11,8 @@ admin.initializeApp(functions.config().firebase);
 const db = admin.firestore();
 const mTeacher = db.collection('Modules').doc('CM1101');
 var mailer = require('./mailer.js');
-var lecturerInfo = require('./getLecturerInfo.js');
+const lecturerInfo = require('./getLecturerInfo.js');
+const getStudentInfo = require('./getStudent.js');
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
   const agent = new WebhookClient({ request, response });
@@ -52,8 +53,12 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
   function getLecturerLocationFunc(lecturerName) {
     return lecturerInfo.getLecturerLocation(lecturerName.toLowerCase());
   }
-/*
+
  function getStudent(agent) { //get student ID and save it into a context (sessionvars)
+   getStudentInfo.getS(agent, db, request)
+ }
+
+   /*
   var fbid = JSON.stringify(request.body.originalDetectIntentRequest.payload.data.sender.id); //get messenger FBID
   fbid = fbid.replace(/['"]+/g, '');
   var exists = false;
