@@ -15,7 +15,7 @@ module.exports = {
           });
             exists = true;
           }
-
+          
         });
      if (exists) { //if the SID has been found, return.
        return;
