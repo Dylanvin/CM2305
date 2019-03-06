@@ -1,5 +1,5 @@
 module.exports = {
-  function:getS(agent, db, request) { //get student ID and save it into a context (sessionvars)
+  getS:function(agent, db, request) { //get student ID and save it into a context (sessionvars)
    var fbid = JSON.stringify(request.body.originalDetectIntentRequest.payload.data.sender.id); //get messenger FBID
    fbid = fbid.replace(/['"]+/g, '');
    var exists = false;
