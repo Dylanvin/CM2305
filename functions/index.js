@@ -11,7 +11,7 @@ admin.initializeApp(functions.config().firebase);
 const db = admin.firestore();
 const mTeacher = db.collection('Modules').doc('CM1101');
 var mailer = require('./mailer.js');
-const lecturerInfo = require('./getLecturerInfo.js');
+var lecturerInfo = require('./getLecturerInfo.js');
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
   const agent = new WebhookClient({ request, response });

@@ -18,13 +18,13 @@ function getLecturerEmail(specifiedLecturer) {
 	})
 }
 //																											Get Lecturer's Location
-getLecturerLocation:function(specifiedLecturer) {
+function getLecturerLocation(specifiedLecturer) {
 	// Search each document in the Staff table for the correct staff member. (Again this can be improved)
 	db.collection('Staff').get().then( (snapshot) => {
 		// For each loop to iterate over each document in the staff table.
 		snapshot.docs.forEach(doc => {
 			// Get the name of the staff member of the document
-			var potentialStaffName = doc.data()Name.toLowerCase();
+			var potentialStaffName = doc.data().Name.toLowerCase();
 			// Compare the parsed name with the name from the document.
 			if ( potentialStaffName == specifiedLecturer ) {
 				// If found, return the lecturer's location

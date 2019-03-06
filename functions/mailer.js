@@ -1,5 +1,4 @@
 var email;
-module.exports.email;
 
 module.exports = {
    theMailer:function(lecName, lecEmail, stuEmail, stuName, stuNum, dateTime){
