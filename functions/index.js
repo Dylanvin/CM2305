@@ -55,7 +55,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
   }
 
  function getStudent(agent) { //get student ID and save it into a context (sessionvars)
-   getStudentInfo.getS(agent, db, request)
+   getStudentInfo.getS(this.agent, db, request)
  }
 
    /*
