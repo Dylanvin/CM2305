@@ -10,9 +10,10 @@ process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
 admin.initializeApp(functions.config().firebase);
 const db = admin.firestore();
 const mTeacher = db.collection('Modules').doc('CM1101');
-var mailer = require('./mailer.js');
+var mailer = require('./MailSystem/mailer.js');
 const lecturerInfo = require('./getLecturerInfo.js');
-const getStudentInfo = require('./getStudent.js');
+const getStudentInfo = require('./Authentication/getStudent.js');
+const tokenCheck = require('./Authentication/checkToken.js');
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
   const agent = new WebhookClient({ request, response });
@@ -55,91 +56,16 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
   }
 
  function getStudent(agent) { //get student ID and save it into a context (sessionvars)
-   getStudentInfo.getS(this.agent, db, request)
+   return getStudentInfo.getS(agent, db, request)
  }
 
-   /*
-  var fbid = JSON.stringify(request.body.originalDetectIntentRequest.payload.data.sender.id); //get messenger FBID
-  fbid = fbid.replace(/['"]+/g, '');
-  var exists = false;
-  return db.collection('Authenticated').get().then( (snapshot) => { //check each doc in Authenticated
-       snapshot.docs.forEach(doc => { //if the user's FBID exists in a doc, get the corresponding SID
-         if (doc.data().FBID === fbid) {
-           agent.context.set({
-                     'name':'sessionvars',
-                     'lifespan': 50,
-                     'parameters': {
-                      'sid': doc.data().SID
-                     }
-         });
-           exists = true;
-         }
-
-       });
-    if (exists) { //if the SID has been found, return.
-      return;
-     }
-    else { //initialising authentication with student
-       agent.context.delete("sessionvars");
-       agent.add("Looks like this is your first time using the bot.");
-        agent.add("What is your student number?");
-        agent.context.set({ //set auth context ready for next intent.
-                     'name':'auth',
-                     'lifespan': 3,
-                     'parameters': {}
-       });
-    }
-    return;
-});
-}
 
 function checkToken(agent){ //checks token given by user in token intent
- var studentDocID;
- var token = agent.parameters.token; //get token value from most recent context (token)
- var SID = agent.context.get("sid").parameters.sid; //get student ID from SID context
- var fbid = JSON.stringify(request.body.originalDetectIntentRequest.payload.data.sender.id); //get FBID from messenger
- fbid = fbid.replace(/['"]+/g, '');
- var valid = false;
-  return db.collection('Students').get().then( (snapshot) => { //check each student document
-       snapshot.docs.forEach(doc => {
-         if ((doc.data().SID === SID) && doc.data().Token === token){ //if the SID and token match, correct student has been found
-           valid = true;
-           studentDocID = doc.id;
-         }
-       });
-       return;
-  }).then(t => {
-           db.runTransaction(t => { //run firebase transaction:
-                 db.collection("Authenticated").doc(SID.toString()).set({ //create a new document in Authenticated using verified values
-                       SID: SID,
-                       FBID: fbid,
-                   });
-               });
-               return;
-    }).then(t => {
-         db.runTransaction(t => {
-                 db.collection("Students").doc(studentDocID.toString()).update({ //generate a new random token for the student
-                       Token: generateToken(8),
-                   });
-               });
-               return;
-     }).then(t => {
-          agent.context.set({ //set sessionvars context storing the SID
-            'name':'sessionvars',
-            'lifespan': 50,
-            'parameters': {
-              'sid': SID
-            }
-            });
-        agent.context.delete("auth"); //reset contexts
-        agent.context.delete("token");
-        agent.context.delete("sid");
-          agent.add("Uni account linked successfully.");
-          return;
-     }).catch(function(err) {
-        console.log(err);
-      });
+  var res = tokenCheck.checkToken(agent, db, request);
+  var studentDocID = tokenCheck.studnetDocID;
+  return res
 }
+
 
 function generateToken(length){ //generates a random string
  var token = "";
@@ -187,7 +113,7 @@ function Welcome(agent){ //Welcome intent ----- this intent is currently CRUCIAL
       return;
     });
 }
-
+/*
 function verify(agent){ //current unused, was going to be used to force reverification in case of accidentally losing session contexts
   if (!(agent.context.get("sessionvars"))) { //similar to welcome function in structure
      return getStudent(agent).then((e) => { //gets student id -> gets student nickname using promise chains.
@@ -770,9 +696,9 @@ function clearAll(agent) { //clear all authentication-related contexts
   intentMap.set('Events', searchEvents);
   intentMap.set('EventDetails', eventDetails);
   intentMap.set('CallMe', changeNickname);
-  intentMap.set('Welcome', Welcome);
+*/
   intentMap.set('Token', checkToken);
-  */
+  intentMap.set('Welcome', Welcome);
   intentMap.set('clearall', clearAll);
   intentMap.set('mail', mailerFunc);
   //intentMap.set('Exams',nextExam);
