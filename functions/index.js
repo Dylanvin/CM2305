@@ -6,6 +6,11 @@ const { Card, Suggestion } = require('dialogflow-fulfillment');
 const { Carousel } = require('actions-on-google');
 const admin = require('firebase-admin');
 
+const runtimeOpts = {
+    timeoutSeconds: 300,
+    memory: '2GB'
+};
+
 process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
 admin.initializeApp(functions.config().firebase);
 
@@ -20,9 +25,9 @@ const Library = require('./Global/Library.js')
 const Nickname = require('./Student/Nickname.js')
 const Module = require('./Lecturer/Module.js');
 const Context = require('./Misc/Context.js');
-//const Timetable = require('./Student/Timetable.js'); - Need firebase ownership first
+const Timetable = require('./Student/Timetable.js');
 
-exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
+exports.dialogflowFirebaseFulfillment = functions.runWith(runtimeOpts).https.onRequest((request, response) => {
   const agent = new WebhookClient({ request, response });
   console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
   console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
@@ -105,7 +110,7 @@ function clearAll(agent) {
   intentMap.set('Token', checkToken);
   intentMap.set('Welcome', Welcome);
   intentMap.set('clearall', clearAll);
-  //intentMap.set('Timetable', getTimetable);  - Need firebase ownership and to change some settings first
+  intentMap.set('Timetable', getTimetable);
   //intentMap.set('Exams',nextExam);
   agent.handleRequest(intentMap);
   });
