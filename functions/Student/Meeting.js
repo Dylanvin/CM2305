@@ -56,7 +56,7 @@ bookMeetingInfo:function(agent, db){ //handles slot filling for the booking func
        }
        if (agent.parameters.time) {
          var hour = new Date(agent.parameters.time).getHours();
-         if(hour > 8 && hour < 20){
+         if(hour > 8 && hour < 19){
            time = agent.parameters.time;
          }
          else{
