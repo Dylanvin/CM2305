@@ -1,5 +1,5 @@
 var email;
-
+// created by Dylan Vincent
 module.exports = {
    theMailer:function(lecName, lecEmail, stuEmail, stuName, stuNum, dateTime){
 

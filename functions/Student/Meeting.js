@@ -22,6 +22,10 @@ bookMeetingInfo:function(agent, db){ //handles slot filling for the booking func
                date = oldvar;
            }
        }
+
+
+
+
        if (agent.parameters.time) {
            let oldvar = agent.parameters._time;
            if ((agent.parameters.time !== oldvar && agent.parameters.modifier && agent.parameters.timesyn) || oldvar === "") {
@@ -40,11 +44,25 @@ bookMeetingInfo:function(agent, db){ //handles slot filling for the booking func
        if (agent.parameters.recipient){
            recipient = agent.parameters.recipient;
        }
-       if (agent.parameters.date){
-           date = agent.parameters.date;
+      if(agent.parameters.date){
+         var d = new Date();  //added by Dylan Vincent date and time validation
+         if(d < Date.parse(agent.parameters.date)){
+            date = agent.parameters.date;
+         }
+         else{
+           agent.add("Sorry that date has passed!");
+           return;
+         }
        }
        if (agent.parameters.time) {
+         var hour = new Date(agent.parameters.time).getHours();
+         if(hour > 8 && hour < 19){
            time = agent.parameters.time;
+         }
+         else{
+           agent.add("Sorry you can only book appointments between the hours of 9am and 7pm.")
+           return;
+         }
        }
    }
       var found = false;
@@ -206,7 +224,7 @@ bookMeeting:function(agent, db){ //books the meeting - creates new events in stu
       console.log(err);
     });
  },
- 
+
  cancelBooking:function(agent){ //handles cancel booking intent - just clears contexts, should use context clearing function instead for consintency
     var name = "";
     if (agent.context.get("sessionvars")) {
@@ -218,7 +236,7 @@ bookMeeting:function(agent, db){ //books the meeting - creates new events in stu
         agent.add("Okay.");
     }
  },
- 
+
   clearContext:function(agent, contextname) { //used to clear contexts properly, this should always be used instead of just using .delete
     agent.context.set({
                         'name': contextname,
@@ -255,16 +273,15 @@ function convertParametersDate(date, time){ //conerts date and time into JS date
     var newDate = new Date(Date.parse(date.split('T')[0] + 'T' + time.split('T')[1]));
     return newDate;
  }
- 
+
  //function addHours(dateObj, hoursToAdd){ //unused
  //   return new Date(new Date(dateObj).setHours(dateObj.getHours() + hoursToAdd));
  //}
- 
+
  //function getLocaleTimeString(dateObj){ //unused
   //return dateObj.toLocaleTimeString('en', { hour: 'numeric', hour12: true });
  //}
- 
+
  //function getLocaleDateString(dateObj){ //unused
   //return dateObj.toLocaleDateString('en', { weekday: 'long', month: 'long', day: 'numeric' });
  //}
- 
