@@ -6,16 +6,16 @@ module.exports = {
 		const specifiedRole = agent.parameters.Roles;
 		// Switch case to query the database for what role 
 		switch(specifiedRole) {
-			case "Head Of School":
+			case "Head of School":
 				return db.collection('Responsibilities').doc(schoolType).get().then( (snapshot) => {
 					agent.add(snapshot.data().HeadOfSchool + " is the " + specifiedRole + " for " + schoolType + ".");
+					return;
 				});
-				break;
 			case "Something else" :
 				return db.collection('Responsibilities').doc(schoolType).get().then( (snapshot) => {
 					agent.add(snapshot.data().HeadOfSchool + " is the " + specifiedRole + " for " + schoolType + ".");
+					return;
 				});
-				break;
 		}
 		return;
 	}

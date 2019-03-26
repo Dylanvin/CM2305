@@ -43,7 +43,7 @@ exports.dialogflowFirebaseFulfillment = functions.runWith(runtimeOpts).https.onR
      });
  } 
  
-*/// Template for new functions
+*/ // Template for new functions
 
 
 function getModuleLecturer(agent) { // Who lectures this module
@@ -146,11 +146,13 @@ function checkIntegrity(agent){
         }); 
     }
 }
-function getWeather(agent) {
+function getWeather(agent) { // Depracated, we won't use this.
   return Weather.getWeather(agent);
 }
 function getWhoIs(agent) {
-  return Who_is.query(agent,db);
+  return checkIntegrity(agent).then(() => {
+    return Who_is.query(agent,db);
+  });
 }
   // Run the proper handler based on the matched Dialogflow intent
   let intentMap = new Map();
