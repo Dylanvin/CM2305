@@ -32,64 +32,119 @@ exports.dialogflowFirebaseFulfillment = functions.runWith(runtimeOpts).https.onR
   console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
   console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
 
+
+/* Template for new functions
+
+  function getFUNCTIONNAME(agent) {
+    checkIntegrity(agent).then(() => {
+        return FUNCTIONHERE;
+     });
+ } 
+ 
+*/// Template for new functions
+
+
 function getModuleLecturer(agent) { // Who lectures this module
-   return Module.getModuleLecturer(agent, db)
+   return checkIntegrity(agent).then(() => {
+       return Module.getModuleLecturer(agent, db);
+    });
 }
 
 function getLecturerEmail(agent) {
-    return Lecturer.getLecturerEmail(agent, db);
+    return checkIntegrity(agent).then(() => {
+        return Lecturer.getLecturerEmail(agent, db);
+    });
 }
 
 function getLecturerLocation() {
-    return Lecturer.getLecturerLocation(agent, db);
+    return checkIntegrity(agent).then(() => {
+        return Lecturer.getLecturerLocation(agent, db);
+    });
 }
 
 function checkToken(agent){ //checks token given by user in token intent
-  return Auth.checkToken(agent, db, request);
+    return checkIntegrity(agent).then(() => {
+    return Auth.checkToken(agent, db, request);
+  });
 }
 
 function Welcome(agent){ //Welcome intent ----- this intent is currently CRUCIAL for many other functions as it initialises important contexts
-   return User.Welcome(agent, db, request);
+    return checkIntegrity(agent).then(() => {
+        return User.Welcome(agent, db, request);
+    });
 }
 
 function getNextLecture(agent) {
-   return Lectures.getNextLecture(agent, db)
+    return checkIntegrity(agent).then(() => {
+        return Lectures.getNextLecture(agent, db);
+    });
 }
 
 function bookMeetingInfo(agent){ //handles slot filling for the booking functionality
-    return Meeting.bookMeetingInfo(agent, db);
+    return checkIntegrity(agent).then(() => {
+        return Meeting.bookMeetingInfo(agent, db);
+    });
 }
 
 function bookMeeting(agent){ //books the meeting - creates new events in student and staff timetable collections
-    return  Meeting.bookMeeting(agent, db);
+    return checkIntegrity(agent).then(() => {
+        return  Meeting.bookMeeting(agent, db);
+    });
 }
 
 function cancelBooking(agent){ //handles cancel booking intent - just clears contexts, should use context clearing function instead for consintency
-    return Meeting.cancelBooking(agent);
+    return checkIntegrity(agent).then(() => {
+        return Meeting.cancelBooking(agent);
+    });
 }
 
 function searchLibrary(agent){ //searches for a book in the Library collection
-    return Library.searchLibrary(agent, db);
+    return checkIntegrity(agent).then(() => {
+        return Library.searchLibrary(agent, db);
+    });
 }
 
 function searchEvents(agent){ //searches for upcoming events
-    return Event.searchEvents(agent, db)
+    return checkIntegrity(agent).then(() => {
+        return Event.searchEvents(agent, db);
+    });
 }
 
 function eventDetails(agent){
-    return Event.eventDetails(agent, db)
+    return checkIntegrity(agent).then(() => {
+        return Event.eventDetails(agent, db);
+    });
 }
 
 function changeNickname(agent){ //change the student's nickname
-   return Nickname.changeNickname(agent, db)
+    return checkIntegrity(agent).then(() => {
+        return Nickname.changeNickname(agent, db);
+    });
 }
 
 function getTimetable(agent) {
-    return Timetable.getTimetable(agent);
+    return checkIntegrity(agent).then(() => {
+        return Timetable.getTimetable(agent);
+    });
 }
 
 function clearAll(agent) {
-   return Context.clearAll(agent);
+    return checkIntegrity(agent).then(() => {
+        return Context.clearAll(agent);
+    });
+}
+
+function checkIntegrity(agent){
+    if ((agent.context.get("sessionvars")) && (agent.context.get("sessionvars").hasOwnProperty('parameters'))){
+        return Promise.all([]);
+    } 
+    else {
+        return User.getStudent(agent, db, request).then((e) => {
+            return User.getName(agent, db).then((f) => {
+                return;
+            });
+        }); 
+    }
 }
 
   // Run the proper handler based on the matched Dialogflow intent
