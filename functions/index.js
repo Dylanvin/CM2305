@@ -26,6 +26,8 @@ const Nickname = require('./Student/Nickname.js')
 const Module = require('./Lecturer/Module.js');
 const Context = require('./Misc/Context.js');
 const Timetable = require('./Student/Timetable.js');
+const Weather = require('./Misc/Weather.js');
+const Who_is = require('./Lecturer/WhoIs.js');
 
 exports.dialogflowFirebaseFulfillment = functions.runWith(runtimeOpts).https.onRequest((request, response) => {
   const agent = new WebhookClient({ request, response });
@@ -89,7 +91,12 @@ function getTimetable(agent) {
 function clearAll(agent) {
    return Context.clearAll(agent);
 }
-
+function getWeather(agent) {
+  return Weather.getWeather(agent);
+}
+function getWhoIs(agent) {
+  return Who_is.query(agent,db);
+}
   // Run the proper handler based on the matched Dialogflow intent
   let intentMap = new Map();
   intentMap.set('Module_lecturer', getModuleLecturer);    //CASE SENSITIVE: THIS HAS CASUED PAIN ALREADY
@@ -109,6 +116,8 @@ function clearAll(agent) {
   intentMap.set('Welcome', Welcome);
   intentMap.set('clearall', clearAll);
   intentMap.set('Timetable', getTimetable);
+  intentMap.set('Weather', getWeather);
+  intentMap.set('Who_is?', getWhoIs);
   //intentMap.set('Exams',nextExam);
   agent.handleRequest(intentMap);
   });
