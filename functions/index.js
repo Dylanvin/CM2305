@@ -29,7 +29,7 @@ const Timetable = require('./Student/Timetable.js');
 const Weather = require('./Misc/Weather.js');
 const Who_is = require('./Lecturer/WhoIs.js');
 
-
+ 
 exports.dialogflowFirebaseFulfillment = functions.runWith(runtimeOpts).region('europe-west1').https.onRequest((request, response) => {
   const agent = new WebhookClient({ request, response });
   console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
