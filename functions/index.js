@@ -1,9 +1,9 @@
 'use strict';
 
 const functions = require('firebase-functions');
-const { WebhookClient } = require('dialogflow-fulfillment');
-const { Card, Suggestion } = require('dialogflow-fulfillment');
-const { Carousel } = require('actions-on-google');
+const { WebhookClient} = require('dialogflow-fulfillment');
+const {Image} = require('dialogflow-fulfillment');
+//const { Carousel } = require('actions-on-google');
 const admin = require('firebase-admin');
 
 const runtimeOpts = {
@@ -29,7 +29,8 @@ const Timetable = require('./Student/Timetable.js');
 const Weather = require('./Misc/Weather.js');
 const Who_is = require('./Lecturer/WhoIs.js');
 
-exports.dialogflowFirebaseFulfillment = functions.runWith(runtimeOpts).https.onRequest((request, response) => {
+ 
+exports.dialogflowFirebaseFulfillment = functions.runWith(runtimeOpts).region('europe-west1').https.onRequest((request, response) => {
   const agent = new WebhookClient({ request, response });
   console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
   console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
@@ -89,7 +90,7 @@ function bookMeetingInfo(agent){ //handles slot filling for the booking function
 
 function bookMeeting(agent){ //books the meeting - creates new events in student and staff timetable collections
     return checkIntegrity(agent).then(() => {
-        return  Meeting.bookMeeting(agent, db);
+        return Meeting.bookMeeting(agent, db);
     });
 }
 
@@ -154,6 +155,7 @@ function getWhoIs(agent) {
     return Who_is.query(agent,db);
   });
 }
+
   // Run the proper handler based on the matched Dialogflow intent
   let intentMap = new Map();
   intentMap.set('Module_lecturer', getModuleLecturer);    //CASE SENSITIVE: THIS HAS CASUED PAIN ALREADY
@@ -178,3 +180,5 @@ function getWhoIs(agent) {
   //intentMap.set('Exams',nextExam);
   agent.handleRequest(intentMap);
   });
+
+
