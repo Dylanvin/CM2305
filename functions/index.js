@@ -28,22 +28,29 @@ const Context = require('./Misc/Context.js');
 const Timetable = require('./Student/Timetable.js');
 const Weather = require('./Misc/Weather.js');
 const Who_is = require('./Lecturer/WhoIs.js');
+const FBMessenger = require('fb-messenger')
 
- 
 exports.dialogflowFirebaseFulfillment = functions.runWith(runtimeOpts).region('europe-west1').https.onRequest((request, response) => {
+  try{
   const agent = new WebhookClient({ request, response });
   console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
   console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
+}
+catch(error){
 
-
+    const messenger = new FBMessenger({token: 'EAAYy6wrtLUEBAI68xZAZCqvmrwkxBtbTUgL3gZAAHiHSGA0126LSQh6UM3HoYnVYMG7wDb4CdsUCKhZAf7raOKldczVNTMnxZBeMbv4OZBUemxnCNKU88QVEdkM0uop92HpuDveUvRZCKg4gZB0K98ZCz4wCHchCRTyACpLArcL4ZAWwZDZD'}) // Will always use this page's token for request unless sent on each method
+    messenger.sendTextMessage({id: '2288655187875159', text: 'YYYYYYYAAAAAAAAAAAAAAAAAAR'})
+    return;
+  
+}
 /* Template for new functions
 
   function getFUNCTIONNAME(agent) {
     checkIntegrity(agent).then(() => {
         return FUNCTIONHERE;
      });
- } 
- 
+ }
+
 */ // Template for new functions
 
 
@@ -138,13 +145,13 @@ function clearAll(agent) {
 function checkIntegrity(agent){
     if ((agent.context.get("sessionvars")) && (agent.context.get("sessionvars").hasOwnProperty('parameters'))){
         return Promise.all([]);
-    } 
+    }
     else {
         return User.getStudent(agent, db, request).then((e) => {
             return User.getName(agent, db).then((f) => {
                 return;
             });
-        }); 
+        });
     }
 }
 function getWeather(agent) { // Depracated, we won't use this.
@@ -167,7 +174,7 @@ function getWhoIs(agent) {
   intentMap.set('Bookmeeting-No', cancelBooking);
   intentMap.set('Bookmeeting-Yes', bookMeeting);
   intentMap.set('BookMeeting-Init', bookMeetingInfo);
-  intentMap.set('BookSearch', searchLibrary); 
+  intentMap.set('BookSearch', searchLibrary);
   intentMap.set('Events', searchEvents);
   intentMap.set('EventDetails', eventDetails);
   intentMap.set('CallMe', changeNickname);
@@ -180,5 +187,3 @@ function getWhoIs(agent) {
   //intentMap.set('Exams',nextExam);
   agent.handleRequest(intentMap);
   });
-
-
