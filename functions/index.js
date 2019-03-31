@@ -34,8 +34,6 @@ const Broadcast = require('./Broadcast/Broadcast.js')
 exports.dialogflowFirebaseFulfillment = functions.runWith(runtimeOpts).region('europe-west1').https.onRequest((request, response) => {
   try{
   const agent = new WebhookClient({ request, response });
-  console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
-  console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
 }
 catch(error){
     const messenger = new FBMessenger({token: 'EAAYy6wrtLUEBAI68xZAZCqvmrwkxBtbTUgL3gZAAHiHSGA0126LSQh6UM3HoYnVYMG7wDb4CdsUCKhZAf7raOKldczVNTMnxZBeMbv4OZBUemxnCNKU88QVEdkM0uop92HpuDveUvRZCKg4gZB0K98ZCz4wCHchCRTyACpLArcL4ZAWwZDZD'}) // Will always use this page's token for request unless sent on each method
@@ -44,6 +42,9 @@ catch(error){
     return;
 
 }
+const agent = new WebhookClient({ request, response });
+console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
+console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
 /* Template for new functions
 
   function getFUNCTIONNAME(agent) {
