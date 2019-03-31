@@ -267,7 +267,7 @@ bookMeeting:function(agent, db){ //books the meeting - creates new events in stu
                 });
                 return;
     }).then(fin => {
-          module.exports.mailer(recipient, "merklemore@gmail.com", "mailboy@gmail.com", agent.context.get("sessionvars").parameters.nickname, SID, dateTime)
+          module.exports.mailer(recipient, "RECIPIENT@gmail.com", "mailboy@gmail.com", agent.context.get("sessionvars").parameters.nickname, SID, dateTime)
           agent.add("Meeting request succesfully sent.");
           module.exports.clearContext(agent, "bookmeeting");
           module.exports.clearContext(agent, "bookmeetingConfirm");
