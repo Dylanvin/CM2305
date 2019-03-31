@@ -10,7 +10,7 @@ bookMeetingInfo:function(agent, db){ //handles slot filling for the booking func
    var changeRecipient = false;
    var changeDate = false;
    var changeTime = false;
-    
+
    if (agent.context.get("bookmeeting")) {
 
         if (agent.parameters.modifier && agent.parameters.recipientsyn && (!agent.parameters.recipient || agent.parameters.recipient === agent.parameters._recipient)) {
@@ -25,7 +25,7 @@ bookMeetingInfo:function(agent, db){ //handles slot filling for the booking func
             changeTime = true;
             pendingChange = true;
         }
-        
+
        if (agent.parameters.recipient && !changeRecipient) {
            let oldvar = agent.parameters._recipient; //uses special parameters values '_param' to store previous values
            //this allows the user to change set parameters half way through the process, such as ("change the date to tomorrow", "set the time to 5pm")
@@ -129,7 +129,7 @@ bookMeetingInfo:function(agent, db){ //handles slot filling for the booking func
    }
    else if (recipient && date && !pendingChange) { //if only recipient and date is given:
 
-        text = randomResponse(["Great, what time?", "Okay, and what time?", "What time would you like?", "What time?"]); 
+        text = randomResponse(["Great, what time?", "Okay, and what time?", "What time would you like?", "What time?"]);
         payload = generatePayload(text, ["Change the recipient", "Change the date"]);
         agent.add(new Payload(agent.FACEBOOK, payload, {sendAsMessage:true}));
 
@@ -148,7 +148,7 @@ bookMeetingInfo:function(agent, db){ //handles slot filling for the booking func
 
        //agent.add("Great. What date?");
        //agent.add(new Suggestion('Change the recipient'));
-        text = randomResponse(["Great, what date?", "Okay, and what date?", "Okay, and what day?", "What date would you like?"]); 
+        text = randomResponse(["Great, what date?", "Okay, and what date?", "Okay, and what day?", "What date would you like?"]);
         payload = generatePayload(text, ["Change the recipient"]);
         agent.add(new Payload(agent.FACEBOOK, payload, {sendAsMessage:true}));
 
@@ -164,7 +164,7 @@ bookMeetingInfo:function(agent, db){ //handles slot filling for the booking func
                });
    }
    else if (changeRecipient) {
-       
+
         recipient = null;
         agent.add("Who would you like to change the recipient to?");
         module.exports.clearContext(agent, "bookmeeting");
@@ -209,7 +209,7 @@ bookMeetingInfo:function(agent, db){ //handles slot filling for the booking func
                });
         }
    else { //if no information is given (i.e "I'd like to book a meeting")
-       text = randomResponse(["Great, who with?", "Who would you like to book with?", "Great, who will be the recipient?", "Who with?", "Let's get started, who would you like to book with?"]); 
+       text = randomResponse(["Great, who with?", "Who would you like to book with?", "Great, who will be the recipient?", "Who with?", "Let's get started, who would you like to book with?"]);
        agent.add(text);
        module.exports.clearContext(agent, "bookmeeting");
        agent.context.set({
@@ -332,7 +332,7 @@ function convertParametersDate(date, time){ //conerts date and time into JS date
 
 
  function generatePayload(text, reps){
-    
+
     replies = [];
     for (var i = 0; i < reps.length; i++) {
         replies.push(
