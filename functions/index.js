@@ -5,7 +5,7 @@ const { WebhookClient} = require('dialogflow-fulfillment');
 const {Image} = require('dialogflow-fulfillment');
 //const { Carousel } = require('actions-on-google');
 const admin = require('firebase-admin');
-
+const moment = require('moment');
 const runtimeOpts = {
     timeoutSeconds: 300,
     memory: '2GB'
@@ -29,6 +29,7 @@ const Timetable = require('./Student/Timetable.js');
 const Weather = require('./Misc/Weather.js');
 const Who_is = require('./Lecturer/WhoIs.js');
 const FBMessenger = require('fb-messenger')
+const Broadcast = require('./Broadcast/Broadcast.js')
 
 exports.dialogflowFirebaseFulfillment = functions.runWith(runtimeOpts).region('europe-west1').https.onRequest((request, response) => {
   try{
@@ -37,11 +38,11 @@ exports.dialogflowFirebaseFulfillment = functions.runWith(runtimeOpts).region('e
   console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
 }
 catch(error){
-
     const messenger = new FBMessenger({token: 'EAAYy6wrtLUEBAI68xZAZCqvmrwkxBtbTUgL3gZAAHiHSGA0126LSQh6UM3HoYnVYMG7wDb4CdsUCKhZAf7raOKldczVNTMnxZBeMbv4OZBUemxnCNKU88QVEdkM0uop92HpuDveUvRZCKg4gZB0K98ZCz4wCHchCRTyACpLArcL4ZAWwZDZD'}) // Will always use this page's token for request unless sent on each method
-    messenger.sendTextMessage({id: '2288655187875159', text: 'YYYYYYYAAAAAAAAAAAAAAAAAAR'})
+    Broadcast.broadcastMsg(db, request, messenger, moment)
+  //  messenger.sendTextMessage({id: '2288655187875159', text: 'YYYYYYYAAAAAAAAAAAAAAAAAAR'})
     return;
-  
+
 }
 /* Template for new functions
 
