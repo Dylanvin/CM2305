@@ -2,8 +2,8 @@
 
 const functions = require('firebase-functions');
 const { WebhookClient} = require('dialogflow-fulfillment');
-const {Image} = require('dialogflow-fulfillment');
 //const { Carousel } = require('actions-on-google');
+
 const admin = require('firebase-admin');
 const moment = require('moment');
 const runtimeOpts = {
@@ -45,103 +45,102 @@ catch(error){
 const agent = new WebhookClient({ request, response });
 console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
 console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
-/* Template for new functions
-
-  function getFUNCTIONNAME(agent) {
-    checkIntegrity(agent).then(() => {
-        return FUNCTIONHERE;
-     });
- }
-
-*/ // Template for new functions
-
 
 function getModuleLecturer(agent) { // Who lectures this module
-   return checkIntegrity(agent).then(() => {
-       return Module.getModuleLecturer(agent, db);
-    });
+    return Module.getModuleLecturer(agent, db);
 }
 
 function getLecturerEmail(agent) {
-    return checkIntegrity(agent).then(() => {
-        return Lecturer.getLecturerEmail(agent, db);
-    });
+    return Lecturer.getLecturerEmail(agent, db);
 }
 
 function getLecturerLocation() {
-    return checkIntegrity(agent).then(() => {
-        return Lecturer.getLecturerLocation(agent, db);
-    });
+    return Lecturer.getLecturerLocation(agent, db);
 }
 
 function checkToken(agent){ //checks token given by user in token intent
-    return checkIntegrity(agent).then(() => {
     return Auth.checkToken(agent, db, request);
-  });
 }
 
 function Welcome(agent){ //Welcome intent ----- this intent is currently CRUCIAL for many other functions as it initialises important contexts
-    return checkIntegrity(agent).then(() => {
-        return User.Welcome(agent, db, request);
-    });
+    return User.Welcome(agent, db, request);
 }
 
 function getNextLecture(agent) {
-    return checkIntegrity(agent).then(() => {
+    return checkIntegrity(agent).then((res) => {
+        if (res) {
         return Lectures.getNextLecture(agent, db);
+        }
+        else {
+            return;
+        }
     });
 }
 function bookMeetingInfo(agent){ //handles slot filling for the booking functionality
-    return checkIntegrity(agent).then(() => {
-        return Meeting.bookMeetingInfo(agent, db);
+    return checkIntegrity(agent).then((res) => {
+        if (res) {
+        return Meeting.bookMeetingInfo(agent, db)
+        }
+        else {
+            return;
+        }
     });
 }
 
 function bookMeeting(agent){ //books the meeting - creates new events in student and staff timetable collections
-    return checkIntegrity(agent).then(() => {
+    return checkIntegrity(agent).then((res) => {
+        if (res) {
         return Meeting.bookMeeting(agent, db);
+        }
+        else {
+            return;
+        }
     });
 }
 
 function cancelBooking(agent){ //handles cancel booking intent - just clears contexts, should use context clearing function instead for consintency
-    return checkIntegrity(agent).then(() => {
+    return checkIntegrity(agent).then((res) => {
+        if (res) {
         return Meeting.cancelBooking(agent);
+        }
+        else {
+            return;
+        }
     });
 }
 function searchLibrary(agent){ //searches for a book in the Library collection
-    return checkIntegrity(agent).then(() => {
         return Library.searchLibrary(agent, db);
-    });
 }
 
 function searchEvents(agent){ //searches for upcoming events
-    return checkIntegrity(agent).then(() => {
-        return Event.searchEvents(agent, db);
-    });
+    return Event.searchEvents(agent, db);
 }
 
-function eventDetails(agent){
-    return checkIntegrity(agent).then(() => {
-        return Event.eventDetails(agent, db);
-    });
-}
 
 function changeNickname(agent){ //change the student's nickname
-    return checkIntegrity(agent).then(() => {
+    return checkIntegrity(agent).then((res) => {
+        if (res) {
         return Nickname.changeNickname(agent, db);
+        }
+        else {
+            return;
+        }
     });
 }
 
 function getTimetable(agent) {
-    return checkIntegrity(agent).then(() => {
+    return checkIntegrity(agent).then((res) => {
+        if (res) {
         return Timetable.getTimetable(agent);
+        }
+        else {
+            return;
+        }
     });
 }
 
 function clearAll(agent) {
-    return checkIntegrity(agent).then(() => {
-        return Context.clearAll(agent);
-    });
+    return Context.clearAll(agent);
 }
 
 function checkIntegrity(agent){
@@ -149,21 +148,28 @@ function checkIntegrity(agent){
         return Promise.all([]);
     }
     else {
-        return User.getStudent(agent, db, request).then((e) => {
-            return User.getName(agent, db).then((f) => {
-                return;
-            });
-        });
+        return User.getStudent(agent, db, request).then((passed) => {
+            if (passed) {
+            return User.getName(agent, db).then(() => {
+                return true;
+            }).catch(err => console.log(err));
+        } else {
+                return false;
+            } 
+        }).catch(err => console.log(err));
     }
 }
+
 function getWeather(agent) { // Depracated, we won't use this.
   return Weather.getWeather(agent);
 }
+
 function getWhoIs(agent) {
   return checkIntegrity(agent).then(() => {
     return Who_is.query(agent,db);
   });
 }
+
 
   // Run the proper handler based on the matched Dialogflow intent
   let intentMap = new Map();
@@ -178,7 +184,6 @@ function getWhoIs(agent) {
   intentMap.set('BookMeeting-Init', bookMeetingInfo);
   intentMap.set('BookSearch', searchLibrary);
   intentMap.set('Events', searchEvents);
-  intentMap.set('EventDetails', eventDetails);
   intentMap.set('CallMe', changeNickname);
   intentMap.set('Token', checkToken);
   intentMap.set('Welcome', Welcome);
