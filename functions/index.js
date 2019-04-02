@@ -26,6 +26,7 @@ const Nickname = require('./Student/Nickname.js')
 const Module = require('./Lecturer/Module.js');
 const Context = require('./Misc/Context.js');
 const Timetable = require('./Student/Timetable.js');
+const WeatherAPI = require('./WeatherAPI/weather.js')
 
 exports.dialogflowFirebaseFulfillment = functions.runWith(runtimeOpts).https.onRequest((request, response) => {
   const agent = new WebhookClient({ request, response });
@@ -88,6 +89,8 @@ function getTimetable(agent) {
     return Timetable.getTimetable(agent);
 }
 
+function getCurrentWeather(agent)
+
 function clearAll(agent) {
    return Context.clearAll(agent);
 }
@@ -103,7 +106,7 @@ function clearAll(agent) {
   intentMap.set('Bookmeeting-No', cancelBooking);
   intentMap.set('Bookmeeting-Yes', bookMeeting);
   intentMap.set('BookMeeting-Init', bookMeetingInfo);
-  intentMap.set('BookSearch', searchLibrary); 
+  intentMap.set('BookSearch', searchLibrary);
   intentMap.set('Events', searchEvents);
   intentMap.set('EventDetails', eventDetails);
   intentMap.set('CallMe', changeNickname);
