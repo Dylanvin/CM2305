@@ -1,59 +1,73 @@
+const chromium = require('chrome-aws-lambda');
+const puppeteer = require('puppeteer-core');
+const cheerio = require('cheerio');
+const {Payload} = require('dialogflow-fulfillment');
+
 module.exports = {
 
-eventDetails:function(agent, db){
-   var event;
-   var ID = false;
-   var IDmap = {};
-   var found = false;
-
-   if (agent.parameters.eventListNumber) { //if the user mentioned the event number ("tell me more about event 1")
-       event = agent.parameters.eventListNumber; //get the number
-       ID = true;
-       IDmap = agent.context.get('events').parameters; //get the IDmap array from previous intent
-   }
-   else if (agent.parameters.eventTitle) { //if the user mentioned the event title ("tell me about carol singing")
-       event = agent.parameters.eventTitle.toLowerCase();
-   }
-   else {
-       agent.add("Sorry I don't know about that event.");
-   }
-
-   return db.collection('Events').get().then( (snapshot) => {
-        snapshot.docs.forEach(doc => {
-            // checks if either the ID exists in the ID map or if the title of the event matches
-            if (ID && doc.data().ID === IDmap[event.toString()] || !ID && doc.data().Title.toLowerCase().indexOf(event) !== -1) {
-                agent.add(doc.data().Title);
-                agent.add(doc.data().Description);
-                agent.add(new Date(doc.data().Date).toLocaleDateString('en', { year: 'numeric', month: 'numeric', day: 'numeric' }));
-                found = true;
+    searchEvents:async function (agent){
+        var elements = [];
+        var browser;
+    
+        browser = await puppeteer.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath,
+        headless: chromium.headless,
+        });
+                
+          let page = await browser.newPage();
+          await page.goto('https://www.cardiff.ac.uk/events/browse-events');
+          await page.waitForSelector('.teaser-body');
+          var result = await page.evaluate(() => {
+            let value = document.querySelector('body').innerHTML;
+            return value;
+          });
+            var data = getEventData(result);
+              for (let i = 0; i < 5; i++) {
+                  elements.push({
+                    "title": data[i].title,
+                    "image_url": data[i].img,
+                    "subtitle": data[i].desc,  
+                    "default_action": {
+                        "type": "web_url",
+                        "url": data[i].url,
+                        "webview_height_ratio": "tall",
+                      },   
+                  },
+                );
+              }
+               var payload = {
+                "attachment":{
+                "type":"template",
+                "payload":{
+                  "template_type":"generic",
+                  "elements": elements
+                    }
+                  }
+                }
+            agent.add(new Payload(agent.FACEBOOK, payload, {sendAsMessage:true}) );
+            if (browser !== null) {
+                await browser.close();
             }
-        });
-        if (!found) {
-            agent.add("Sorry I don't know anything about that event.");
-        }
-        return;
-   });
-},
-
-
-searchEvents:function(agent, db){ //searches for upcoming events
-    var numToID = {};
-    agent.add("Upcoming events: \n");
-    var count = 1;
-    return db.collection('Events').get().then( (snapshot) => {
-        snapshot.docs.forEach(doc => { //loops through all events (would be way too many events in real life application so maybe improve)
-            agent.add(count + ". " + doc.data().Title + '\n'); //lists the events using arbitrary numbers starting at 1.
-            numToID[count.toString()] = doc.data().ID; //link the above number with the event ID, stored in an array [used later]
-            count++;
-        });
-        agent.context.set({
-                 'name':'events',
-                 'lifespan': 5,
-                 'parameters': numToID
-        });
-        return;
-    });
-
+            return;
+    },
 }
 
+function getEventData(html) {
+    var datas = [];
+    var $ = cheerio.load(html);
+    //console.log(html);
+    let text = $(".teaser.with-image").each(function(i, item) {
+        //data.push($(item).find('.best-location-library-code').text());
+        datas.push({
+        title: $(item).find('.teaser-title').text(),
+        desc: $(item).find('.teaser-body').text().split('\n')[2].trim() + " - " + $(item).find('.teaser-body > p:nth-of-type(2)').text(),
+        img: $(item).find('.teaser-image > a > img').attr('srcset').split(' ')[0],
+        url: $(item).find('.teaser-title > a').attr('href')}
+        );
+        //console.log(datas);
+    });
+    //console.log("data i: " + datas);
+    return datas;
 }

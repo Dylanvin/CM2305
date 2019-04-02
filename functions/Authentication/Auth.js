@@ -12,6 +12,7 @@ module.exports = {
            valid = true;
            studentDocID = doc.id;
          }
+         return;
        });
        return;
   }).then(t => {

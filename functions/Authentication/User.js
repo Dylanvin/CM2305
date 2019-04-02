@@ -19,7 +19,8 @@ module.exports = {
           
         });
      if (exists) { //if the SID has been found, return.
-       return;
+       return true;
+       
       }
      else { //initialising authentication with student
         agent.context.delete("sessionvars");
@@ -30,8 +31,8 @@ module.exports = {
                       'lifespan': 3,
                       'parameters': {}
         });
+        return false;
      }
-     return;
  });
  },
 
