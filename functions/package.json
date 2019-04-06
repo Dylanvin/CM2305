@@ -15,18 +15,22 @@
   "dependencies": {
     "actions-on-google": "^2.5.0",
     "capture-website": "^0.2.1",
+    "cheerio": "^1.0.0-rc.2",
+    "chrome-aws-lambda": "1.11.2",
     "dialogflow": "^0.8.0",
     "dialogflow-fulfillment": "^0.6.1",
+    "fb-messenger": "^2.3.1",
     "firebase-admin": "^7.0.0",
     "firebase-functions": "^2.2.0",
     "firebase-tools": "^6.4.0",
     "google-auth-library": "^3.1.0",
     "googleapis": "^37.2.0",
+    "iltorb": "2.4.1",
+    "moment": "^2.24.0",
     "nodemailer": "^3.0.2",
+    "puppeteer-core": "1.11.0",
     "request": "^2.88.0",
-    "request-promise": "^4.2.4",
-    "fb-messenger": "^2.3.1",
-    "moment": "^2.24.0"
+    "request-promise": "^4.2.4"
   },
   "devDependencies": {
     "eslint": "^5.15.1",
