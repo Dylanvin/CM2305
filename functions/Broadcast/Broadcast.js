@@ -11,8 +11,13 @@ module.exports = {
         return db.collection('Authenticated').get().then( (snapshot) => { //check each doc in Authenticated
                snapshot.docs.forEach(docID => { //if the user's FBID exists in a doc, get the corresponding SID
                  var id = docID.data().FBID;
-                 messenger.sendTextMessage({id: id, text: "The event " + doc.data().Title + " is happening on " + eventDateString + "!"})
+                 if(!(doc.data().Announcement)){
+                 messenger.sendTextMessage({id: id, text: "The event " + doc.data().Title + " is happening on " + eventDateString + " at " + doc.data().Location + "!"})
                 // messenger.sendTextMessage({'2288655187875159', text: "The event " + doc.data().Title + " is havening on the " + doc.data().Date + "!"})
+                }
+                if(doc.data().Announcement){
+                 messenger.sendTextMessage({id: id, text: doc.data().Description})
+                }
                });
                return;
           });

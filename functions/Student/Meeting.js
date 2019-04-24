@@ -39,7 +39,23 @@ bookMeetingInfo:function(agent, db){ //handles slot filling for the booking func
        if (agent.parameters.date && !changeDate) {
            let oldvar = agent.parameters._date;
            if ((agent.parameters.date !== oldvar && agent.parameters.modifier && agent.parameters.datesyn) || (oldvar === "")) {
-               date = agent.parameters.date;
+             var d = new Date();  //added by Dylan Vincent date and time validation
+             if(d < Date.parse(agent.parameters.date)){
+                date = agent.parameters.date;
+             }
+             else{
+               var dateInv = true;
+               module.exports.clearContext(agent, "bookmeeting");
+               agent.context.set({ //reset context and wait for params to be filled by the user
+                         'name':'bookmeeting',
+                         'lifespan': 10,
+                         'parameters':{
+                         'recipient': recipient,
+                         'date': date,
+                         'time': time
+                       }
+                       });
+             }
            }
            else {
                date = oldvar;
@@ -49,9 +65,26 @@ bookMeetingInfo:function(agent, db){ //handles slot filling for the booking func
        if (agent.parameters.time && !changeTime) {
            let oldvar = agent.parameters._time;
            if ((agent.parameters.time !== oldvar && agent.parameters.modifier && agent.parameters.timesyn) || (oldvar === "")) {
+             var hours = new Date(agent.parameters.time).getHours();
+             if(hours > 8 && hours < 19){
                time = agent.parameters.time;
+             }
+             else{
+               var timeInv = true;
+               module.exports.clearContext(agent, "bookmeeting");
+               agent.context.set({ //reset context and wait for params to be filled by the user
+                         'name':'bookmeeting',
+                         'lifespan': 10,
+                         'parameters':{
+                         'recipient': recipient,
+                         'date': date,
+                         'time': time
+                       }
+                       });
+             }
            }
            else {
+
                time = oldvar;
            }
        }
@@ -64,16 +97,6 @@ bookMeetingInfo:function(agent, db){ //handles slot filling for the booking func
        if (agent.parameters.recipient){
            recipient = agent.parameters.recipient;
        }
-       if (agent.parameters.date){
-         var d = new Date();  //added by Dylan Vincent date and time validation
-         if(d < Date.parse(agent.parameters.date)){
-            date = agent.parameters.date;
-         }
-         else{
-           agent.add("Sorry that date has passed!");
-           return Promise.all([]);
-         }
-       }
        if (agent.parameters.time) {
          var hour = new Date(agent.parameters.time).getHours();
          if(hour > 8 && hour < 19){
@@ -84,6 +107,17 @@ bookMeetingInfo:function(agent, db){ //handles slot filling for the booking func
            return Promise.all([]);
          }
        }
+       if (agent.parameters.date){
+         var da = new Date();  //added by Dylan Vincent date and time validation
+         if(da < Date.parse(agent.parameters.date)){
+            date = agent.parameters.date;
+         }
+         else{
+           agent.add("Sorry that date has passed!");
+           return Promise.all([]);
+         }
+       }
+
    }
 
       var found = false;
@@ -128,11 +162,15 @@ bookMeetingInfo:function(agent, db){ //handles slot filling for the booking func
                });
    }
    else if (recipient && date && !pendingChange) { //if only recipient and date is given:
-
+        if(timeInv){
+        agent.add("Sorry you can only book appointments between the hours of 9am and 6pm.")
+        timeInv = false;
+        }
+        else{
         text = randomResponse(["Great, what time?", "Okay, and what time?", "What time would you like?", "What time?"]);
         payload = generatePayload(text, ["Change the recipient", "Change the date"]);
         agent.add(new Payload(agent.FACEBOOK, payload, {sendAsMessage:true}));
-
+      }
        module.exports.clearContext(agent, "bookmeeting");
        agent.context.set({ //reset context and wait for params to be filled by the user
                  'name':'bookmeeting',
@@ -148,10 +186,15 @@ bookMeetingInfo:function(agent, db){ //handles slot filling for the booking func
 
        //agent.add("Great. What date?");
        //agent.add(new Suggestion('Change the recipient'));
+       if(dateInv){
+       agent.add("Sorry that date has passed!");
+       dateInv = false;
+       }
+       else{
         text = randomResponse(["Great, what date?", "Okay, and what date?", "Okay, and what day?", "What date would you like?"]);
         payload = generatePayload(text, ["Change the recipient"]);
         agent.add(new Payload(agent.FACEBOOK, payload, {sendAsMessage:true}));
-
+      }
        module.exports.clearContext(agent, "bookmeeting", );
        agent.context.set({
                  'name':'bookmeeting',

@@ -30,7 +30,7 @@ const Weather = require('./Misc/Weather.js');
 const Who_is = require('./Lecturer/WhoIs.js');
 const FBMessenger = require('fb-messenger')
 const Broadcast = require('./Broadcast/Broadcast.js')
-
+const Assignments = require('./Student/Assignment.js');
 exports.dialogflowFirebaseFulfillment = functions.runWith(runtimeOpts).region('europe-west1').https.onRequest((request, response) => {
   try{
   const agent = new WebhookClient({ request, response });
@@ -155,7 +155,7 @@ function checkIntegrity(agent){
             }).catch(err => console.log(err));
         } else {
                 return false;
-            } 
+            }
         }).catch(err => console.log(err));
     }
 }
@@ -167,6 +167,17 @@ function getWeather(agent) { // Depracated, we won't use this.
 function getWhoIs(agent) {
   return checkIntegrity(agent).then(() => {
     return Who_is.query(agent,db);
+  });
+}
+
+function getAssignments(agent){
+  return checkIntegrity(agent).then((res) => {
+      if (res) {
+      return Assignments.myAssignments(agent, db, moment);
+      }
+      else {
+          return;
+      }
   });
 }
 
@@ -191,6 +202,7 @@ function getWhoIs(agent) {
   intentMap.set('Timetable', getTimetable);
   intentMap.set('Weather', getWeather);
   intentMap.set('Who_is?', getWhoIs);
+  intentMap.set('Assignments', getAssignments);
   //intentMap.set('Exams',nextExam);
   agent.handleRequest(intentMap);
   });
