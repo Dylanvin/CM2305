@@ -18,12 +18,13 @@ module.exports = {
   getWeather:function() {
     var client = new HttpClient();
 
-    if (agent.parameters.unit_temperature){
+    /*if (agent.parameters.unit_temperature){
   		unit = agent.parameters.unit_temperature.toLowerCase();
-  	}
+  	}*/
+
     client.get('https://api.darksky.net/forecast/a12b8829b95a30d78caa024f91d3e845/51.4816,3.1791', function(response) {
       let resp = JSON.parse(response);
-      return resp.hourly.summary;
+      agent.add("Today's forecast: " + resp.hourly.summary);
     });
   }
 }
