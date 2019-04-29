@@ -14,7 +14,7 @@ getTimetable:function(agent, poptions){
     scaleFactor: 1,
     type: 'png'
   };
-  
+
     var url = "http://joemerk.github.io/timetable/?id="+agent.context.get("sessionvars").parameters.sid;
   	return captureWebsite.base64(url, coptions).then(out => {
         var options = {
@@ -35,7 +35,7 @@ getTimetable:function(agent, poptions){
         .catch(function (err) {
             console.log(err);
             return Promise.all([]);
-        });                                         
+        });
     });
   }
 

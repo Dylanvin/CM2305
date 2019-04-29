@@ -30,7 +30,7 @@ const Weather = require('./WeatherAPI/weather.js');
 const Who_is = require('./Lecturer/WhoIs.js');
 const FBMessenger = require('fb-messenger')
 const Broadcast = require('./Broadcast/Broadcast.js')
-
+const Assignments = require('./Student/Assignment.js');
 exports.dialogflowFirebaseFulfillment = functions.runWith(runtimeOpts).region('europe-west1').https.onRequest((request, response) => {
   try{
   const agent = new WebhookClient({ request, response });
@@ -172,6 +172,17 @@ function getWhoIs(agent) {
   });
 }
 
+function getAssignments(agent){
+  return checkIntegrity(agent).then((res) => {
+      if (res) {
+      return Assignments.myAssignments(agent, db, moment);
+      }
+      else {
+          return;
+      }
+  });
+}
+
 
   // Run the proper handler based on the matched Dialogflow intent
   let intentMap = new Map();
@@ -193,6 +204,7 @@ function getWhoIs(agent) {
   intentMap.set('Timetable', getTimetable);
   intentMap.set('Weather', getWeather);
   intentMap.set('Who_is?', getWhoIs);
+  intentMap.set('Assignments', getAssignments);
   //intentMap.set('Exams',nextExam);
   agent.handleRequest(intentMap);
   });
