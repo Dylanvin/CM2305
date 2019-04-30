@@ -28,7 +28,7 @@ module.exports = {
          agent.add("What is your student number?");
          agent.context.set({ //set auth context ready for next intent.
                       'name':'auth',
-                      'lifespan': 3,
+                      'lifespan': 1,
                       'parameters': {}
         });
         return false;
