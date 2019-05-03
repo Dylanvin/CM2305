@@ -40,7 +40,7 @@ bookMeetingInfo:function(agent, db){ //handles slot filling for the booking func
            let oldvar = agent.parameters._date;
            if ((agent.parameters.date !== oldvar && agent.parameters.modifier && agent.parameters.datesyn) || (oldvar === "")) {
              var d = new Date();  //added by Dylan Vincent date and time validation
-             if(d < Date.parse(agent.parameters.date)){
+             if(d <= Date.parse(agent.parameters.date)){
                 date = agent.parameters.date;
              }
              else{
@@ -66,7 +66,7 @@ bookMeetingInfo:function(agent, db){ //handles slot filling for the booking func
            let oldvar = agent.parameters._time;
            if ((agent.parameters.time !== oldvar && agent.parameters.modifier && agent.parameters.timesyn) || (oldvar === "")) {
              var hours = new Date(agent.parameters.time).getHours();
-             if(hours > 8 && hours < 19){
+             if(hours >= 8 && hours <= 19){
                time = agent.parameters.time;
              }
              else{
@@ -99,7 +99,7 @@ bookMeetingInfo:function(agent, db){ //handles slot filling for the booking func
        }
        if (agent.parameters.time) {
          var hour = new Date(agent.parameters.time).getHours();
-         if(hour > 8 && hour < 19){
+         if(hour >= 8 && hour <= 19){
            time = agent.parameters.time;
          }
          else{
@@ -109,7 +109,7 @@ bookMeetingInfo:function(agent, db){ //handles slot filling for the booking func
        }
        if (agent.parameters.date){
          var da = new Date();  //added by Dylan Vincent date and time validation
-         if(da < Date.parse(agent.parameters.date)){
+         if(da <= Date.parse(agent.parameters.date)){
             date = agent.parameters.date;
          }
          else{
