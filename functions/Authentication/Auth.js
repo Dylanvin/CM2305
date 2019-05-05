@@ -8,7 +8,7 @@ module.exports = {
  var valid = false;
   return db.collection('Students').get().then( (snapshot) => { //check each student document
        snapshot.docs.forEach(doc => {
-         if ((doc.data().SID === SID) && doc.data().Token === token){ //if the SID and token match, correct student has been found
+         if ((doc.data().SID === SID) && doc.data().Token.toString()  === token.toString() ){ //if the SID and token match, correct student has been found
            valid = true;
            studentDocID = doc.id;
          }

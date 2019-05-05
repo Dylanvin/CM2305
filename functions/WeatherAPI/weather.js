@@ -4,7 +4,7 @@ var HttpClient = function() { //Class used to make GET http requests.
     this.get = function(aUrl, aCallback) {
         var anHttpRequest = new XMLHttpRequest();
         anHttpRequest.onreadystatechange = function() {
-            if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200)
+            if (anHttpRequest.readyState === 4 && anHttpRequest.status === 200)
                 aCallback(anHttpRequest.responseText);
         }
 
