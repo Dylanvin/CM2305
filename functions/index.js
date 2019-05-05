@@ -139,8 +139,6 @@ function getTimetable(agent) {
     });
 }
 
-function getCurrentWeather(agent)
-
 function clearAll(agent) {
     return Context.clearAll(agent);
 }
@@ -162,7 +160,7 @@ function checkIntegrity(agent){
     }
 }
 
-function getWeather(agent) { // Depracated, we won't use this.
+function getWeather(agent) { 
   return Weather.getWeather(agent);
 }
 
