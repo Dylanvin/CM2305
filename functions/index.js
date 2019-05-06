@@ -141,11 +141,6 @@ function getTimetable(agent) {
     });
 }
 
-<<<<<<< HEAD
-=======
-//function getCurrentWeather(agent)
-
->>>>>>> 56095bb64c13103fd592b09172bd482047107b5f
 function clearAll(agent) {
     return Context.clearAll(agent);
 }
@@ -167,7 +162,7 @@ function checkIntegrity(agent){
     }
 }
 
-function getWeather(agent) { 
+function getWeather(agent) {
   return Weather.getWeather(agent);
 }
 
@@ -218,7 +213,7 @@ function getExams(agent){
   intentMap.set('Welcome', Welcome);
   intentMap.set('clearall', clearAll);
   intentMap.set('Timetable', getTimetable);
-  intentMap.set('Weather', getWeather);
+  intentMap.set('weather', getWeather);
   intentMap.set('Who_is?', getWhoIs);
   intentMap.set('Assignments', getAssignments);
   intentMap.set('Exams', getExams);
