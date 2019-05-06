@@ -2,6 +2,7 @@
 
 const functions = require('firebase-functions');
 const { WebhookClient} = require('dialogflow-fulfillment');
+const https = require("https");
 //const { Carousel } = require('actions-on-google');
 
 const admin = require('firebase-admin');
@@ -163,7 +164,15 @@ function checkIntegrity(agent){
 }
 
 function getWeather(agent) {
-  return Weather.getWeather(agent);
+  return Weather.getWeather(agent)
+  .then(resp => {
+    agent.add(resp);
+    return;
+  })
+  .catch(() => {
+    agent.add("Seems an error has occured. Try again later.");
+    return;
+  });
 }
 
 function getWhoIs(agent) {

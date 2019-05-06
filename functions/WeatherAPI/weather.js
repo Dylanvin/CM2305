@@ -2,6 +2,7 @@ module.exports = {
 
   getWeather:function(agent) { //Returns weather data depending on user input.
 
+    const https = require("https");
     var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
     var HttpClient = function() { //Class used to make GET http requests.
@@ -30,14 +31,20 @@ module.exports = {
       var formattedTime = hours + ":" + minutes;
       return formattedTime;
     }
-        
+
+    function getDate(date) { //Converts Dialogflow's date format to DD/MM.
+      var dateObj = new Date(date);
+      var result = dateObj.getDate() + "/" + (dateObj.getMonth()+1);
+      return result;
+    }
+
     var client = new HttpClient();
-    var weathertype = agent.parameters.weathertype;
+    var weathertype = agent.parameters["weather-type"];
     var date = "";
     var today = new Date();
     var agentDate = new Date(agent.parameters.date);
     var sameDay = false;
-    var agentResponse = "Default 2";
+    var agentResponse = "Default";
 
     if (today.getDate() === agentDate.getDate() && today.getMonth() === agentDate.getMonth() && today.getFullYear() === agentDate.getFullYear()) {
       sameDay = true;
@@ -52,9 +59,115 @@ module.exports = {
       date = "," + agent.parameters.date;
     }
 
-    console.log("Weathertype:" + weathertype);
+    const url = "https://api.darksky.net/forecast/a12b8829b95a30d78caa024f91d3e845/51.4816,3.1791" + date + "?units=si";
 
-    client.get("https://api.darksky.net/forecast/a12b8829b95a30d78caa024f91d3e845/51.4816,3.1791" + date + "?units=si", function(response) {
+    return new Promise((resolve, reject) => {
+      https.get(url, function(jsonData) {
+        var json = "";
+        jsonData.on("data", function(chunk) {
+          console.log("Received JSON:" + chunk);
+          json += chunk;
+        });
+
+        jsonData.on("end", function(){
+          let resp = JSON.parse(json);
+          switch(weathertype) {
+            default:
+            agentResponse = "Seems like something went wrong. Could you try rephrasing that?" + weathertype;
+            break;
+
+            case "Weather":
+            if (!date) {
+              agentResponse = "Today's forecast: " + resp.hourly.summary;
+            }
+            else {
+              agentResponse= "Forecast for " + getDate(agent.parameters.date) + ": " + resp.hourly.summary;
+            }
+            break;
+
+            case "Precipitation":
+            var dataPrec = resp.daily.data[0];
+            if (!date){
+              if (dataPrec.precipType === undefined){
+                agentResponse = "There's no predicted precipitation of any kind today.";
+              }
+              else {
+                agentResponse = "Today's precipitation forecast: " + (dataPrec.precipProbability*100) + " % chance of " + dataPrec.precipType + " at a rate of " + dataPrec.precipIntensity + " millimetres per hour, reaching a maximum intensity at " + convertUNIX(dataPrec.precipIntensityMaxTime) + ".";
+              }
+            }
+            else {
+              if (dataPrec.precipType === undefined){
+                agentResponse = "There's no predicted precipitation of any kind on " + agent.parameters.date + ".";
+              }
+              else {
+                agentResponse = "Precipitation forecast for " + getDate(agent.parameters.date) + ": " + (dataPrec.precipProbability*100) + " % chance of " + dataPrec.precipType + " at a rate of " + dataPrec.precipIntensity + " millimetres per hour, reaching a maximum at " + convertUNIX(dataPrec.precipIntensityMaxTime) + ".";
+              }
+            }
+            break;
+
+            case "Temperature":
+            var data = resp.daily.data[0];
+            if (!date) {
+              agentResponse = "Current temperature: " + resp.currently.temperature + "°C. Highest predicted temperature today: " + data.temperatureMax + "°C at " + convertUNIX(data.temperatureMaxTime) + ". Lowest: " + data.temperatureMin + "°C at " + convertUNIX(data.temperatureMinTime) + ".";
+            }
+            else {
+              agentResponse = "Highest predicted temperature for " + getDate(agent.parameters.date) + ": " + resp.temperatureMax + "°C at " + convertUNIX(resp.temperatureMaxTime) + ". Lowest: " + resp.temperatureMin + "°C at " + convertUNIX(data.temperatureMinTime) + ".";
+            }
+            break;
+
+            case "Humidity":
+            if(!date) {
+              agentResponse = "Current humidity: " + (resp.currently.humidity*100) + "%.";
+            }
+            else {
+              agentResponse = "Predicted humidity for " + getDate(agent.parameters.date) + ": " + (resp.daily[0].humidity*100) + "%.";
+            }
+            break;
+
+            case "Cloud cover":
+            if (!date) {
+              agentResponse = "Cloud cover is currently at " + (resp.currently.cloudCover*100) + "%.";
+            }
+            else {
+              agentResponse = "Predicted cloud cover for " + getDate(agent.parameters.date) + ": " + (resp.daily[0].cloudCover*100) + "%.";
+            }
+            break;
+
+            case "Wind":
+            if (!date){
+              agentResponse = "Wind speed is currently " + resp.currently.windSpeed + " m/s with gusts up to " + resp.currently.windGust + "m/s.";
+            }
+            else {
+              agentResponse = "Predicted wind speed for " + getDate(agent.parameters.date) + ": " + resp.daily[0].windSpeed + "m/s with gusts up to " + resp.daily[0].windGust + "m/s.";
+            }
+            break;
+
+            case "Sunrise":
+            agentResponse = "The sun rises at " + convertUNIX(resp.daily.data[0].sunriseTime) + ".";
+            break;
+
+            case "Sunset":
+            agentResponse = "The sun sets at " + convertUNIX(resp.daily.data[0].sunsetTime) + ".";
+            break;
+
+            case "Alert":
+            if (resp.alerts) {
+              for (var i = 0; i < resp.alerts.length; i++) {
+                agentResponse += resp.alerts[i].title + " at " + convertUNIX(resp.alerts[i].time) + ".\nExpires " + convertUNIX(resp.alerts[i].expires) + ".\n";
+                agentResponse += "Description: " + resp.alerts[i].description;
+              }
+            }
+            else {
+              agentResponse = "No weather alerts.";
+            }
+            break;
+          }
+          resolve(agentResponse);
+        });
+      });
+    });
+
+    /*client.get("https://api.darksky.net/forecast/a12b8829b95a30d78caa024f91d3e845/51.4816,3.1791" + date + "?units=si", function(response) {
       let resp = JSON.parse(response);
 
       switch(weathertype) {
@@ -149,8 +262,8 @@ module.exports = {
         break;
       }
     });
-    agent.add(agentResponse);
-    return;
+    resolve(agentResponse);
+    return;*/
   }
 }
 
