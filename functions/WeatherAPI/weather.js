@@ -111,7 +111,7 @@ module.exports = {
               agentResponse = "Current temperature: " + resp.currently.temperature + "°C. Highest predicted temperature today: " + data.temperatureMax + "°C at " + convertUNIX(data.temperatureMaxTime) + ". Lowest: " + data.temperatureMin + "°C at " + convertUNIX(data.temperatureMinTime) + ".";
             }
             else {
-              agentResponse = "Highest predicted temperature for " + getDate(agent.parameters.date) + ": " + resp.temperatureMax + "°C at " + convertUNIX(resp.temperatureMaxTime) + ". Lowest: " + resp.temperatureMin + "°C at " + convertUNIX(data.temperatureMinTime) + ".";
+              agentResponse = "Highest predicted temperature for " + getDate(agent.parameters.date) + ": " + data.temperatureMax + "°C at " + convertUNIX(data.temperatureMaxTime) + ". Lowest: " + data.temperatureMin + "°C at " + convertUNIX(data.temperatureMinTime) + ".";
             }
             break;
 
@@ -120,7 +120,7 @@ module.exports = {
               agentResponse = "Current humidity: " + (resp.currently.humidity*100) + "%.";
             }
             else {
-              agentResponse = "Predicted humidity for " + getDate(agent.parameters.date) + ": " + (resp.daily[0].humidity*100) + "%.";
+              agentResponse = "Predicted humidity for " + getDate(agent.parameters.date) + ": " + (resp.daily.data[0].humidity*100) + "%.";
             }
             break;
 
@@ -129,7 +129,7 @@ module.exports = {
               agentResponse = "Cloud cover is currently at " + (resp.currently.cloudCover*100) + "%.";
             }
             else {
-              agentResponse = "Predicted cloud cover for " + getDate(agent.parameters.date) + ": " + (resp.daily[0].cloudCover*100) + "%.";
+              agentResponse = "Predicted cloud cover for " + getDate(agent.parameters.date) + ": " + (resp.daily.data[0].cloudCover*100) + "%.";
             }
             break;
 
@@ -138,7 +138,7 @@ module.exports = {
               agentResponse = "Wind speed is currently " + resp.currently.windSpeed + " m/s with gusts up to " + resp.currently.windGust + "m/s.";
             }
             else {
-              agentResponse = "Predicted wind speed for " + getDate(agent.parameters.date) + ": " + resp.daily[0].windSpeed + "m/s with gusts up to " + resp.daily[0].windGust + "m/s.";
+              agentResponse = "Predicted wind speed for " + getDate(agent.parameters.date) + ": " + resp.daily.data[0].windSpeed + "m/s with gusts up to " + resp.daily.data[0].windGust + "m/s.";
             }
             break;
 
