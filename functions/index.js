@@ -2,6 +2,7 @@
 
 const functions = require('firebase-functions');
 const { WebhookClient} = require('dialogflow-fulfillment');
+const https = require("https");
 //const { Carousel } = require('actions-on-google');
 
 const admin = require('firebase-admin');
@@ -141,8 +142,6 @@ function getTimetable(agent) {
     });
 }
 
-//function getCurrentWeather(agent)
-
 function clearAll(agent) {
     return Context.clearAll(agent);
 }
@@ -164,8 +163,16 @@ function checkIntegrity(agent){
     }
 }
 
-function getWeather(agent) { // Depracated, we won't use this.
-  return Weather.getWeather(agent);
+function getWeather(agent) {
+  return Weather.getWeather(agent)
+  .then(resp => {
+    agent.add(resp);
+    return;
+  })
+  .catch(() => {
+    agent.add("Seems an error has occured. Try again later.");
+    return;
+  });
 }
 
 function getWhoIs(agent) {
@@ -215,7 +222,7 @@ function getExams(agent){
   intentMap.set('Welcome', Welcome);
   intentMap.set('clearall', clearAll);
   intentMap.set('Timetable', getTimetable);
-  intentMap.set('Weather', getWeather);
+  intentMap.set('weather', getWeather);
   intentMap.set('Who_is?', getWhoIs);
   intentMap.set('Assignments', getAssignments);
   intentMap.set('Exams', getExams);
