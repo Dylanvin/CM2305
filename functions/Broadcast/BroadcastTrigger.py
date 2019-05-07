@@ -4,7 +4,7 @@ import schedule
 import time
 
 def callCF():
-    url = "https://europe-west1-tutor-bot-85ef4.cloudfunctions.net/dialogflowFirebaseFulfillment"
+    url = "https://europe-west1-tutor-bot-85ef4.cloudfunctions.net/broadcast"
     socket.setdefaulttimeout(5)
     try:
     	req = urllib.request.Request(url)
